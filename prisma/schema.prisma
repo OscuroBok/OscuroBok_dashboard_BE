@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int     @id @default(autoincrement())
+  name          String
+  email         String  @unique
+  contact_no    String
+  location      String
+  password      String
+  profile_image String?
+  usercode      String
+
+  role    Role @relation(fields: [role_id], references: [id])
+  role_id Int
+
+  created_at DateTime    @default(now())
+  updated_at DateTime?   @updatedAt
+  deleted_at DateTime?
+  Resturant  Resturant[]
+
+  @@map("users")
+}
+
+model Role {
+  id         Int       @id @default(autoincrement())
+  role       String
+  created_at DateTime  @default(now())
+  deleted_at DateTime?
+  User       User[]
+
+  @@map("roles")
+}
+
+model Resturant {
+  id           Int     @id @default(autoincrement())
+  owner_name   String
+  contact_no   String
+  whats_app_no String
+  email        String
+  location     String
+  menue        String?
+  logo         String?
+
+  user_id Int
+  user    User @relation(fields: [user_id], references: [id])
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@map("resturants")
+}
