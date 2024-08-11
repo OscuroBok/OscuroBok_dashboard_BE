@@ -48,7 +48,7 @@ model Resturant {
   whats_app_no String
   email        String
   location     String
-  menue        String?
+  menu         String?
   logo         String?
 
   user_id Int

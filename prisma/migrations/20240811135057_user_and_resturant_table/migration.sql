@@ -35,7 +35,7 @@ CREATE TABLE `resturants` (
     `whats_app_no` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
     `location` VARCHAR(191) NOT NULL,
-    `menue` VARCHAR(191) NULL,
+    `menu` VARCHAR(191) NULL,
     `logo` VARCHAR(191) NULL,
     `user_id` INTEGER NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
