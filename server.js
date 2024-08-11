@@ -16,7 +16,7 @@ const server = Hapi.server({
 const init = async () => {
     const swaggerOptions = {
         info: {
-            title: 'BlueHr API Documentation',
+            title: 'OscuroBok API Documentation',
             version: Pack.version,
         },
         schemes: ['http', 'https'],
