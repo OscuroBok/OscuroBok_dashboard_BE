@@ -1,7 +1,7 @@
 const ROLES = {
     SUPER_ADMIN: 'Super_Admin',
     ADMIN: 'Admin',
-    RESTURANT_OWNER: 'Resturant_Owner',
+    RESTAURANT_OWNER: 'Restaurant_Owner',
     USER: 'User',
 }
 
