@@ -1,0 +1,103 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int     @id @default(autoincrement())
+  name          String
+  email         String  @unique
+  contact_no    String
+  location      String
+  password      String
+  profile_image String?
+  usercode      String
+
+  role    Role @relation(fields: [role_id], references: [id])
+  role_id Int
+
+  created_at DateTime     @default(now())
+  updated_at DateTime?    @updatedAt
+  deleted_at DateTime?
+  Restaurant Restaurant[]
+
+  @@map("users")
+}
+
+model Role {
+  id         Int       @id @default(autoincrement())
+  role       String
+  created_at DateTime  @default(now())
+  deleted_at DateTime?
+  User       User[]
+
+  @@map("roles")
+}
+
+model Restaurant {
+  id                              Int       @id @default(autoincrement())
+  restaurant_name                 String?
+  restaurant_code                 String
+  owner_name                      String
+  contact_no                      String    @unique
+  whatsapp_no                     String?
+  email                           String    @unique
+  password                        String
+  address                         String
+  geo_loc_lat                     Float?
+  geo_loc_lng                     Float?
+  date_of_estd                    String?
+  biography                       String?
+  restaurant_capacity             Int?
+  restaurant_type                 String?
+  services                        String?
+  open_time                       DateTime?
+  close_time                      DateTime?
+  types_of_cuisines               String?
+  operational_days                String?
+  insta_link                      String?
+  fb_link                         String?
+  x_link                          String?
+  menu                            String?
+  logo                            String?
+  cover_img                       String?
+  rating                          Float     @default(0.0)
+  average_price                   Int?
+  restaurant_verification         String    @default("Pending")
+  restaurant_verification_remarks String    @default("Verification is pending.")
+  is_active                       Boolean   @default(true)
+
+  aadhar_no     String? @unique
+  passport_no   String? @unique
+  reg_cert_no   String? @unique
+  fssai_no      String? @unique
+  gstin_no      String? @unique
+  aadhar_file   String?
+  passport_file String?
+  reg_cert_file String?
+  fssai_file    String?
+  gstin_file    String?
+
+  bank_name    String?
+  bank_ac_name String?
+  bank_ac_no   String?
+  bank_branch  String?
+  bank_ifsc    String?
+  bank_micr    String?
+
+  user_id Int
+  user    User @relation(fields: [user_id], references: [id])
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@map("restaurants")
+}
