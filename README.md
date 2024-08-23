@@ -1,5 +1,5 @@
 # To clone a code from a particular branch, use:
-* git clone -b dashboard-sign-in https://github.com/OscuroBok/OscuroBok_dashboard_FE.git
+* git clone -b branch_name https://github.com/OscuroBok/OscuroBok_dashboard_FE.git
 
 # Commands used:
 * npm install
