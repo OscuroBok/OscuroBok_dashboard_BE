@@ -10,7 +10,7 @@ const { ROLES } = require("../utills/constant");
 // restaurant-admin-registration
 const restaurantAdminRegistration = async (req, h) => {
 	try {
-		const { name, email, contact_no, location, password, role_id } =
+		const { name, email, contact_no, password, role_id } =
 			req.payload;
 		const existingUser = await prisma.user.findFirst({
 			where: {
@@ -27,17 +27,6 @@ const restaurantAdminRegistration = async (req, h) => {
 				})
 				.code(400);
 		}
-
-		const { profile_image: file } = req.payload;
-		const uploadDir = path.join(__dirname, "..", "uploads");
-		const uniqueFilename = `${Date.now()}_${file.hapi.filename}`;
-		const uploadPath = path.join(uploadDir, uniqueFilename);
-
-		if (!fs.existsSync(uploadDir)) {
-			fs.mkdirSync(uploadDir, { recursive: true });
-		}
-		const fileStream = fs.createWriteStream(uploadPath);
-		file.pipe(fileStream);
 
 		const roleExists = await prisma.role.findFirst({
 			where: {
@@ -73,10 +62,8 @@ const restaurantAdminRegistration = async (req, h) => {
 				name,
 				email,
 				contact_no,
-				location,
 				password: hashedPassword,
 				role_id: roleExists.id,
-				profile_image: uniqueFilename,
 				usercode,
 			},
 		});
@@ -90,9 +77,7 @@ const restaurantAdminRegistration = async (req, h) => {
 					contact_no,
 					email,
 					password: hashedPassword,
-					address: location,
 					user_id: user.id,
-					logo: uniqueFilename,
 				},
 			});
 		}
@@ -355,9 +340,8 @@ const restaurantProfileUpdate = async (req, h) => {
 				}
 			}
 
-			const uniqueFilename = `${Date.now()}_${fieldName}_${
-				file.hapi.filename
-			}`;
+			const uniqueFilename = `${Date.now()}_${fieldName}_${file.hapi.filename
+				}`;
 			const uploadPath = path.join(uploadDir, uniqueFilename);
 
 			if (!fs.existsSync(uploadDir)) {

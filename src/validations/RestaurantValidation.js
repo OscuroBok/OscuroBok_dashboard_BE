@@ -12,14 +12,8 @@ const restaurantAdminValidation = {
 			.message("Please provide a valid contact number")
 			.required()
 			.label("contact_no"),
-		location: Joi.string().required().label("location"),
 		password: Joi.string().required().label("password"),
 		role_id: Joi.number().required().label("role"),
-		profile_image: Joi.any()
-			.meta({ swaggerType: "file" })
-			.description("File to upload")
-			.required()
-			.label("profile_image"),
 	}),
 };
 

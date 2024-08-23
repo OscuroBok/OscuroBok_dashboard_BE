@@ -15,7 +15,7 @@ model User {
   name          String
   email         String  @unique
   contact_no    String
-  location      String
+  location      String?
   password      String
   profile_image String?
   usercode      String
@@ -50,7 +50,7 @@ model Restaurant {
   whatsapp_no                     String?
   email                           String    @unique
   password                        String
-  address                         String
+  address                         String?
   geo_loc_lat                     Float?
   geo_loc_lng                     Float?
   date_of_estd                    String?
