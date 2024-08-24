@@ -34,7 +34,6 @@ module.exports = [
 			payload: {
 				parse: true,
 				allow: ["application/json"],
-				maxBytes: 10485760,
 			},
 			plugins: {
 				"hapi-swagger": {
@@ -84,7 +83,7 @@ module.exports = [
 			tags: ["api", "Restaurant"],
 			handler: controller.restaurantProfile,
 			pre: [Authentication],
-			description: "Get restaurant profile",
+			description: "Get Restaurant Profile",
 		},
 	},
 
@@ -118,7 +117,7 @@ module.exports = [
 				parse: true,
 				allow: "multipart/form-data",
 				multipart: true,
-				maxBytes: 20971520,
+				maxBytes: 41943040,
 			},
 			plugins: {
 				"hapi-swagger": {
