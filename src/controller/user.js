@@ -152,7 +152,7 @@ const me = async (req, h) => {
             }
         });
 
-        return h.response({ message: "User profile_image fetched successfully", data: user }).code(200);
+        return h.response({ message: "User profile fetched successfully", data: user }).code(200);
     } catch (error) {
         console.log(error);
         return h.response({ message: "Something went wrong", error }).code(500);
