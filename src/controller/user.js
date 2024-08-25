@@ -47,7 +47,7 @@ const createUser = async (req, h) => {
         const uuidCode = uuidv4().substring(0, 5);
         let usercode;
 
-        if (roleExists.role === ROLES.RESTURANT_OWNER) {
+        if (roleExists.role === ROLES.RESTAURANT_OWNER) {
             usercode = `OW${uuidCode}`
         } else if (roleExists.role === ROLES.USER) {
             usercode = `US${uuidCode}`

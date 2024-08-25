@@ -23,10 +23,10 @@ model User {
   role    Role @relation(fields: [role_id], references: [id])
   role_id Int
 
-  created_at DateTime    @default(now())
-  updated_at DateTime?   @updatedAt
+  created_at DateTime     @default(now())
+  updated_at DateTime?    @updatedAt
   deleted_at DateTime?
-  Resturant  Resturant[]
+  Restaurant Restaurant[]
 
   @@map("users")
 }
@@ -41,15 +41,44 @@ model Role {
   @@map("roles")
 }
 
-model Resturant {
-  id           Int     @id @default(autoincrement())
-  owner_name   String
-  contact_no   String
-  whats_app_no String
-  email        String
-  location     String
-  menu         String?
-  logo         String?
+model Restaurant {
+  id                  Int       @id @default(autoincrement())
+  restaurant_name     String
+  restaurant_code     String
+  owner_name          String
+  contact_no          String    @unique
+  whats_app_no        String?
+  email               String    @unique
+  password            String
+  address             String
+  geo_location        String?
+  date_of_estd        String?
+  biography           String?
+  restaurant_capacity Int?
+  restaurant_type     String?
+  services            String?
+  open_time           DateTime?
+  close_time          DateTime?
+  types_of_cuisines   String?
+  operational_days    String?
+  insta_link          String?
+  fb_link             String?
+  x_link              String?
+  menu                String?
+  logo                String?
+  cover_img           String?
+  rating              Float?    @default(0.0)
+
+  aadhar_no     String?
+  passport_no   String?
+  reg_cert_no   String?
+  fssai_no      String?
+  gstin_no      String?
+  aadhar_file   String?
+  passport_file String?
+  reg_cert_file String?
+  fssai_file    String?
+  gstin_file    String?
 
   user_id Int
   user    User @relation(fields: [user_id], references: [id])
@@ -58,5 +87,5 @@ model Resturant {
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
 
-  @@map("resturants")
+  @@map("restaurants")
 }
