@@ -1,10 +1,10 @@
 const { Authentication } = require("../config/auth");
-const controller = require("../controller/RestaurantController");
+const controller = require("../controller/restaurant");
 const {
 	restaurantAdminValidation,
 	restaurantLoginValidation,
 	restaurantProfileUpdation,
-} = require("../validations/RestaurantValidation");
+} = require("../validations/restaurant");
 
 module.exports = [
 	// restaurant registration
