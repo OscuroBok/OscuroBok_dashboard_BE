@@ -10,8 +10,7 @@ const { ROLES } = require("../utills/constant");
 // restaurant-admin-registration
 const restaurantAdminRegistration = async (req, h) => {
 	try {
-		const { name, email, contact_no, password, role_id } =
-			req.payload;
+		const { name, email, contact_no, password, role_id } = req.payload;
 		const existingUser = await prisma.user.findFirst({
 			where: {
 				OR: [{ email: email }, { contact_no: contact_no }],
@@ -274,13 +273,15 @@ const restaurantProfileUpdate = async (req, h) => {
 			bank_micr,
 		} = req.payload;
 
-		const existingRestaurant = await prisma.restaurant.findFirst({
-			where: {
-				id: restaurant.id,
-				is_active: true,
-				deleted_at: null,
-			},
-		});
+		if ((geo_loc_lat && !geo_loc_lng) || (!geo_loc_lat && geo_loc_lng)) {
+			return h
+				.response({
+					success: false,
+					message:
+						"Both latitude and longitude must be provided together.",
+				})
+				.code(400);
+		}
 
 		const docNumber = {
 			aadhar_no,
@@ -315,6 +316,177 @@ const restaurantProfileUpdate = async (req, h) => {
 			}
 		};
 
+		const existingRestaurant = await prisma.restaurant.findFirst({
+			where: {
+				id: restaurant.id,
+				is_active: true,
+				deleted_at: null,
+			},
+		});
+
+		const checkFields = async (newValue, existingValue, displayName) => {
+			if (newValue && newValue === existingValue) {
+				return displayName;
+			}
+			return null;
+		};
+
+		const checks = await Promise.all([
+			checkFields(
+				restaurant_name,
+				existingRestaurant.restaurant_name,
+				"Restaurant name"
+			),
+			checkFields(
+				owner_name,
+				existingRestaurant.owner_name,
+				"Owner name"
+			),
+			checkFields(
+				contact_no,
+				existingRestaurant.contact_no,
+				"Contact number"
+			),
+			checkFields(address, existingRestaurant.address, "Address"),
+			checkFields(
+				whatsapp_no,
+				existingRestaurant.whatsapp_no,
+				"WhatsApp number"
+			),
+			checkFields(
+				geo_loc_lat,
+				existingRestaurant.geo_loc_lat,
+				"Geo-location latitude"
+			),
+			checkFields(
+				geo_loc_lng,
+				existingRestaurant.geo_loc_lng,
+				"Geo-location longitude"
+			),
+			checkFields(
+				date_of_estd,
+				existingRestaurant.date_of_estd,
+				"Date of establishment"
+			),
+			checkFields(biography, existingRestaurant.biography, "Biography"),
+			checkFields(
+				restaurant_capacity,
+				existingRestaurant.restaurant_capacity,
+				"Restaurant capacity"
+			),
+			checkFields(
+				restaurant_type,
+				existingRestaurant.restaurant_type,
+				"Restaurant type"
+			),
+			checkFields(services, existingRestaurant.services, "Services"),
+			checkFields(
+				open_time,
+				existingRestaurant.open_time,
+				"Opening time"
+			),
+			checkFields(
+				close_time,
+				existingRestaurant.close_time,
+				"Closing time"
+			),
+			checkFields(
+				types_of_cuisines,
+				existingRestaurant.types_of_cuisines,
+				"Types of cuisines"
+			),
+			checkFields(
+				operational_days,
+				existingRestaurant.operational_days,
+				"Operational days"
+			),
+			checkFields(
+				insta_link,
+				existingRestaurant.insta_link,
+				"Instagram link"
+			),
+			checkFields(fb_link, existingRestaurant.fb_link, "Facebook link"),
+			checkFields(x_link, existingRestaurant.x_link, "X (Twitter) link"),
+			checkFields(menu, existingRestaurant.menu, "Menu"),
+			checkFields(rating, existingRestaurant.rating, "Rating"),
+			checkFields(
+				average_price,
+				existingRestaurant.average_price,
+				"Average price"
+			),
+			checkFields(
+				restaurant_verification,
+				existingRestaurant.restaurant_verification,
+				"Restaurant verification status"
+			),
+			checkFields(
+				restaurant_verification_remarks,
+				existingRestaurant.restaurant_verification_remarks,
+				"Restaurant verification remarks"
+			),
+			checkFields(
+				is_active,
+				existingRestaurant.is_active,
+				"Active status"
+			),
+			checkFields(
+				aadhar_no,
+				existingRestaurant.aadhar_no,
+				"Aadhar number"
+			),
+			checkFields(
+				passport_no,
+				existingRestaurant.passport_no,
+				"Passport number"
+			),
+			checkFields(
+				reg_cert_no,
+				existingRestaurant.reg_cert_no,
+				"Registration certificate number"
+			),
+			checkFields(fssai_no, existingRestaurant.fssai_no, "FSSAI number"),
+			checkFields(gstin_no, existingRestaurant.gstin_no, "GSTIN number"),
+			checkFields(bank_name, existingRestaurant.bank_name, "Bank name"),
+			checkFields(
+				bank_ac_name,
+				existingRestaurant.bank_ac_name,
+				"Bank account name"
+			),
+			checkFields(
+				bank_ac_no,
+				existingRestaurant.bank_ac_no,
+				"Bank account number"
+			),
+			checkFields(
+				bank_branch,
+				existingRestaurant.bank_branch,
+				"Bank branch"
+			),
+			checkFields(
+				bank_ifsc,
+				existingRestaurant.bank_ifsc,
+				"Bank IFSC code"
+			),
+			checkFields(
+				bank_micr,
+				existingRestaurant.bank_micr,
+				"Bank MICR code"
+			),
+		]);
+
+		const checkSame = checks.filter((result) => result !== null);
+
+		if (checkSame.length > 0) {
+			return h
+				.response({
+					success: false,
+					message: `${checkSame.join(
+						", "
+					)} match the current details in our database. Please modify these fields or leave them blank if no changes are necessary.`,
+				})
+				.code(400);
+		}
+
 		for (const [field, value] of Object.entries(docNumber)) {
 			const response = await checkDocNumber(field, value);
 			if (response) return response;
@@ -340,8 +512,9 @@ const restaurantProfileUpdate = async (req, h) => {
 				}
 			}
 
-			const uniqueFilename = `${Date.now()}_${fieldName}_${file.hapi.filename
-				}`;
+			const uniqueFilename = `${Date.now()}_${fieldName}_${
+				file.hapi.filename
+			}`;
 			const uploadPath = path.join(uploadDir, uniqueFilename);
 
 			if (!fs.existsSync(uploadDir)) {
@@ -356,48 +529,53 @@ const restaurantProfileUpdate = async (req, h) => {
 
 		const uploadDir = path.join(__dirname, "..", "uploads");
 
-		const logoFilename = await uploadFile(
-			logo,
-			existingRestaurant.logo,
-			uploadDir,
-			"logo"
-		);
-		const cover_imgFilename = await uploadFile(
-			cover_img,
-			existingRestaurant.cover_img,
-			uploadDir,
-			"cover_img"
-		);
-		const aadharFilename = await uploadFile(
-			aadhar_file,
-			existingRestaurant.aadhar_file,
-			uploadDir,
-			"aadhar_file"
-		);
-		const passportFilename = await uploadFile(
-			passport_file,
-			existingRestaurant.passport_file,
-			uploadDir,
-			"passport_file"
-		);
-		const regCertFilename = await uploadFile(
-			reg_cert_file,
-			existingRestaurant.reg_cert_file,
-			uploadDir,
-			"reg_cert_file"
-		);
-		const fssaiFilename = await uploadFile(
-			fssai_file,
-			existingRestaurant.fssai_file,
-			uploadDir,
-			"fssai_file"
-		);
-		const gstinFilename = await uploadFile(
-			gstin_file,
-			existingRestaurant.gstin_file,
-			uploadDir,
-			"gstin_file"
-		);
+		const [
+			logoFilename,
+			cover_imgFilename,
+			aadharFilename,
+			passportFilename,
+			regCertFilename,
+			fssaiFilename,
+			gstinFilename,
+		] = await Promise.all([
+			uploadFile(logo, existingRestaurant.logo, uploadDir, "logo"),
+			uploadFile(
+				cover_img,
+				existingRestaurant.cover_img,
+				uploadDir,
+				"cover_img"
+			),
+			uploadFile(
+				aadhar_file,
+				existingRestaurant.aadhar_file,
+				uploadDir,
+				"aadhar_file"
+			),
+			uploadFile(
+				passport_file,
+				existingRestaurant.passport_file,
+				uploadDir,
+				"passport_file"
+			),
+			uploadFile(
+				reg_cert_file,
+				existingRestaurant.reg_cert_file,
+				uploadDir,
+				"reg_cert_file"
+			),
+			uploadFile(
+				fssai_file,
+				existingRestaurant.fssai_file,
+				uploadDir,
+				"fssai_file"
+			),
+			uploadFile(
+				gstin_file,
+				existingRestaurant.gstin_file,
+				uploadDir,
+				"gstin_file"
+			),
+		]);
 
 		const updatedData = await prisma.restaurant.update({
 			where: {

@@ -183,6 +183,23 @@ const editMyProfile = async (req, h) => {
             },
         });
 
+        const checkSame = [];
+        if (name && name === existingUser.name) checkSame.push("Name");
+        if (contact_no && contact_no === existingUser.contact_no)
+            checkSame.push("Contact number");
+        if (location && location === existingUser.location)
+            checkSame.push("Address");
+        if (checkSame.length > 0) {
+            return h
+                .response({
+                    success: false,
+                    message: `${checkSame.join(
+                        ", "
+                    )} match the current details in our database. Please modify these fields or leave them blank if no changes are necessary.`,
+                })
+                .code(400);
+        }
+
         let uniqueFilename;
         if (
             profile_image &&

@@ -3,7 +3,7 @@ const controller = require("../controller/restaurant");
 const {
 	restaurantAdminValidation,
 	restaurantLoginValidation,
-	restaurantProfileUpdation,
+	restaurantProfileUpdateValidation,
 } = require("../validations/restaurant");
 
 module.exports = [
@@ -97,7 +97,7 @@ module.exports = [
 			description: "Update Restaurant Profile",
 			pre: [Authentication],
 			validate: {
-				...restaurantProfileUpdation,
+				...restaurantProfileUpdateValidation,
 				failAction: (request, h, err) => {
 					const customErrorMessages = err.details.map(
 						(detail) => detail.message
