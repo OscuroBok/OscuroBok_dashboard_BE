@@ -15,7 +15,7 @@ model User {
   name          String
   email         String  @unique
   contact_no    String
-  location      String
+  location      String?
   password      String
   profile_image String?
   usercode      String
@@ -50,8 +50,9 @@ model Restaurant {
   whatsapp_no                     String?
   email                           String    @unique
   password                        String
-  address                         String
-  geo_location                    String?
+  address                         String?
+  geo_loc_lat                     Float?
+  geo_loc_lng                     Float?
   date_of_estd                    String?
   biography                       String?
   restaurant_capacity             Int?
@@ -71,7 +72,7 @@ model Restaurant {
   average_price                   Int?
   restaurant_verification         String    @default("Pending")
   restaurant_verification_remarks String    @default("Verification is pending.")
-  is_active                       Boolean   @default(false)
+  is_active                       Boolean   @default(true)
 
   aadhar_no     String? @unique
   passport_no   String? @unique

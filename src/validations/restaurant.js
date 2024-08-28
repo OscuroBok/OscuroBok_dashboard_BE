@@ -12,14 +12,8 @@ const restaurantAdminValidation = {
 			.message("Please provide a valid contact number")
 			.required()
 			.label("contact_no"),
-		location: Joi.string().required().label("location"),
 		password: Joi.string().required().label("password"),
 		role_id: Joi.number().required().label("role"),
-		profile_image: Joi.any()
-			.meta({ swaggerType: "file" })
-			.description("File to upload")
-			.required()
-			.label("profile_image"),
 	}),
 };
 
@@ -32,7 +26,7 @@ const restaurantLoginValidation = {
 };
 
 // restaurant-admin-profile-update
-const restaurantProfileUpdation = {
+const restaurantProfileUpdateValidation = {
 	payload: Joi.object({
 		restaurant_name: Joi.string().optional().label("restaurant_name"),
 		owner_name: Joi.string().optional().label("owner_name"),
@@ -47,11 +41,11 @@ const restaurantProfileUpdation = {
 			.message("Please provide a valid contact number")
 			.optional()
 			.label("whatsapp_no"),
-		email: Joi.string().required().label("email"),
-		geo_location: Joi.string().optional().label("geo_location"),
-		date_of_estd: Joi.string().optional().label("date_of_estd"),
+		geo_loc_lat: Joi.number().optional().label("geo_loc_lat"),
+		geo_loc_lng: Joi.number().optional().label("geo_loc_lng"),
+		date_of_estd: Joi.date().optional().label("date_of_estd"),
 		biography: Joi.string().optional().label("biography"),
-		restaurant_capacity: Joi.string()
+		restaurant_capacity: Joi.number()
 			.optional()
 			.label("reataurant_capacity"),
 		restaurant_type: Joi.string().optional().label("restaurant_type"),
@@ -74,8 +68,8 @@ const restaurantProfileUpdation = {
 			.description("File to upload")
 			.optional()
 			.label("cover_img"),
-		rating: Joi.string().optional().label("rating"),
-		average_price: Joi.string().optional().label("average_price"),
+		rating: Joi.number().optional().label("rating"),
+		average_price: Joi.number().optional().label("average_price"),
 		restaurant_verification: Joi.string()
 			.optional()
 			.valid("Pending", "Hold", "Approved", "Rejected")
@@ -83,17 +77,37 @@ const restaurantProfileUpdation = {
 		restaurant_verification_remarks: Joi.string()
 			.optional()
 			.label("restaurant_verification_remarks"),
-		is_active: Joi.string().optional().label("is_active"),
+		is_active: Joi.boolean().optional().label("is_active"),
 		aadhar_no: Joi.string().optional().label("aadhar_no"),
 		passport_no: Joi.string().optional().label("passport_no"),
 		reg_cert_no: Joi.string().optional().label("reg_cert_no"),
 		fssai_no: Joi.string().optional().label("fssai_no"),
 		gstin_no: Joi.string().optional().label("gstin_no"),
-		aadhar_file: Joi.string().optional().label("aadhar_file"),
-		passport_file: Joi.string().optional().label("passport_file"),
-		reg_cert_file: Joi.string().optional().label("reg_cert_file"),
-		fssai_file: Joi.string().optional().label("fssai_file"),
-		gstin_file: Joi.string().optional().label("gstin_file"),
+		aadhar_file: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.optional()
+			.label("aadhar_file"),
+		passport_file: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.optional()
+			.label("passport_file"),
+		reg_cert_file: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.optional()
+			.label("reg_cert_file"),
+		fssai_file: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.optional()
+			.label("fssai_file"),
+		gstin_file: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.optional()
+			.label("gstin_file"),
 		bank_name: Joi.string().optional().label("bank_name"),
 		bank_ac_name: Joi.string().optional().label("bank_ac_name"),
 		bank_ac_no: Joi.string().optional().label("bank_ac_no"),
@@ -106,5 +120,5 @@ const restaurantProfileUpdation = {
 module.exports = {
 	restaurantAdminValidation,
 	restaurantLoginValidation,
-	restaurantProfileUpdation,
+	restaurantProfileUpdateValidation,
 };
