@@ -7,6 +7,7 @@ const {
 	userOtpValidation,
 	verifyOtpValidation,
 	editUserValidation,
+	userPasswordChangeValidation,
 } = require("../validations/user");
 const contactNoPattern = /^(\+|\d)[0-9]{7,16}$/;
 
@@ -127,6 +128,44 @@ module.exports = [
 			plugins: {
 				"hapi-swagger": {
 					payloadType: "form",
+					responseMessages: [],
+				},
+			},
+		},
+	},
+
+	// change-user-password
+	{
+		method: "POST",
+		path: "/user-password-change",
+		options: {
+			tags: ["api", "User"],
+			handler: controller.changeUserPassword,
+			description: "User profile's Password Change",
+			pre: [Authentication],
+			validate: {
+				...userPasswordChangeValidation,
+				failAction: (request, h, err) => {
+					const customErrorMessages = err.details.map(
+						(detail) => detail.message
+					);
+					return h
+						.response({
+							statusCode: 400,
+							error: "Bad Request",
+							message: customErrorMessages,
+						})
+						.code(400)
+						.takeover();
+				},
+			},
+			payload: {
+				parse: true,
+				allow: ["application/json"],
+			},
+			plugins: {
+				"hapi-swagger": {
+					payloadType: "json",
 					responseMessages: [],
 				},
 			},

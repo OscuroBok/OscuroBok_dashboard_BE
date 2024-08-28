@@ -117,8 +117,17 @@ const restaurantProfileUpdateValidation = {
 	}),
 };
 
+// change password with existing password
+const restaurantPasswordChangeValidation = {
+	payload: Joi.object({
+		password: Joi.string().required().label("password"),
+		new_password: Joi.string().required().label("new_password"),
+	}),
+};
+
 module.exports = {
 	restaurantAdminValidation,
 	restaurantLoginValidation,
 	restaurantProfileUpdateValidation,
+	restaurantPasswordChangeValidation,
 };

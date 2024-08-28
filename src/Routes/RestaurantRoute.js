@@ -4,6 +4,7 @@ const {
 	restaurantAdminValidation,
 	restaurantLoginValidation,
 	restaurantProfileUpdateValidation,
+	restaurantPasswordChangeValidation
 } = require("../validations/restaurant");
 
 module.exports = [
@@ -122,6 +123,44 @@ module.exports = [
 			plugins: {
 				"hapi-swagger": {
 					payloadType: "form",
+					responseMessages: [],
+				},
+			},
+		},
+	},
+
+	// change-restaurant's-password
+	{
+		method: "POST",
+		path: "/restaurant-password-change",
+		options: {
+			tags: ["api", "Restaurant"],
+			handler: controller.changeRestaurantPassword,
+			description: "Restaurant Profile Password Change",
+			pre: [Authentication],
+			validate: {
+				...restaurantPasswordChangeValidation,
+				failAction: (request, h, err) => {
+					const customErrorMessages = err.details.map(
+						(detail) => detail.message
+					);
+					return h
+						.response({
+							statusCode: 400,
+							error: "Bad Request",
+							message: customErrorMessages,
+						})
+						.code(400)
+						.takeover();
+				},
+			},
+			payload: {
+				parse: true,
+				allow: ["application/json"],
+			},
+			plugins: {
+				"hapi-swagger": {
+					payloadType: "json",
 					responseMessages: [],
 				},
 			},

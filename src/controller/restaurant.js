@@ -660,9 +660,82 @@ const restaurantProfileUpdate = async (req, h) => {
 	}
 };
 
+// change password with existing password
+const changeRestaurantPassword = async (req, h) => {
+	try {
+		const restaurant = req.rootUser;
+		if (!restaurant) {
+			return h
+				.response({
+					message: "Unauthorized user. Please log in again.",
+				})
+				.code(401);
+		}
+
+		const { password, new_password } = req.payload;
+
+		const existingRestaurant = await prisma.restaurant.findFirst({
+			where: {
+				id: restaurant.id,
+				is_active: true,
+				deleted_at: null,
+			},
+		});
+
+		if (!existingRestaurant) {
+			return h.response({ message: "User not found." }).code(404);
+		}
+
+		const isMatch = await bcrypt.compare(
+			password,
+			existingRestaurant.password
+		);
+		if (!isMatch) {
+			return h
+				.response({ message: "Invalid current password." })
+				.code(400);
+		}
+
+		if (password === new_password) {
+			return h
+				.response({
+					message:
+						"New password cannot be the same as the current one.",
+				})
+				.code(400);
+		}
+
+		const hashedPassword = await bcrypt.hash(new_password, 10);
+
+		const updatedPassword = await prisma.restaurant.update({
+			where: {
+				id: restaurant.id,
+				deleted_at: null,
+			},
+			data: {
+				password: hashedPassword,
+			},
+		});
+
+		return h
+			.response({
+				success: true,
+				message: "Password updated successfully.",
+				data: updatedPassword,
+			})
+			.code(200);
+	} catch (error) {
+		console.error("Error in changeUserPassword:", error);
+		return h
+			.response({ message: "Error while updating user's password." })
+			.code(500);
+	}
+};
+
 module.exports = {
 	restaurantAdminRegistration,
 	restaurantLogin,
 	restaurantProfile,
 	restaurantProfileUpdate,
+	changeRestaurantPassword,
 };
