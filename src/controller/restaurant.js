@@ -664,14 +664,6 @@ const restaurantProfileUpdate = async (req, h) => {
 const changeRestaurantPassword = async (req, h) => {
 	try {
 		const restaurant = req.rootUser;
-		if (!restaurant) {
-			return h
-				.response({
-					message: "Unauthorized user. Please log in again.",
-				})
-				.code(401);
-		}
-
 		const { password, new_password } = req.payload;
 
 		const existingRestaurant = await prisma.restaurant.findFirst({
@@ -681,10 +673,6 @@ const changeRestaurantPassword = async (req, h) => {
 				deleted_at: null,
 			},
 		});
-
-		if (!existingRestaurant) {
-			return h.response({ message: "User not found." }).code(404);
-		}
 
 		const isMatch = await bcrypt.compare(
 			password,
@@ -725,9 +713,14 @@ const changeRestaurantPassword = async (req, h) => {
 			})
 			.code(200);
 	} catch (error) {
-		console.error("Error in changeUserPassword:", error);
+		console.error(
+			"An error occurred while changing the password for restaurant.",
+			error
+		);
 		return h
-			.response({ message: "Error while updating user's password." })
+			.response({
+				message: "Error while updating restaurant's password.",
+			})
 			.code(500);
 	}
 };

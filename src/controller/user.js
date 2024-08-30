@@ -261,14 +261,6 @@ const editMyProfile = async (req, h) => {
 const changeUserPassword = async (req, h) => {
 	try {
 		const user = req.rootUser;
-		if (!user) {
-			return h
-				.response({
-					message: "Unauthorized user. Please log in again.",
-				})
-				.code(401);
-		}
-
 		const { password, new_password } = req.payload;
 
 		const existingUser = await prisma.user.findUnique({
@@ -277,10 +269,6 @@ const changeUserPassword = async (req, h) => {
 				deleted_at: null,
 			},
 		});
-
-		if (!existingUser) {
-			return h.response({ message: "User not found." }).code(404);
-		}
 
 		const isMatch = await bcrypt.compare(password, existingUser.password);
 		if (!isMatch) {
@@ -318,13 +306,15 @@ const changeUserPassword = async (req, h) => {
 			})
 			.code(200);
 	} catch (error) {
-		console.error("Error in changeUserPassword:", error);
+		console.error(
+			"An error occurred while changing the user's password.",
+			error
+		);
 		return h
 			.response({ message: "Error while updating user's password." })
 			.code(500);
 	}
 };
-
 
 module.exports = {
 	createUser,
