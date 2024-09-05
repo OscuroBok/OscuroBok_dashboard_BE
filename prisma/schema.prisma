@@ -11,14 +11,18 @@ datasource db {
 }
 
 model User {
-  id            Int     @id @default(autoincrement())
-  name          String
-  email         String  @unique
-  contact_no    String
-  location      String?
-  password      String
-  profile_image String?
-  usercode      String
+  id                    Int     @id @default(autoincrement())
+  name                  String
+  email                 String  @unique
+  contact_no            String
+  location              String?
+  password              String
+  profile_image         String?
+  usercode              String
+  is_active             Boolean @default(true)
+  profile_remarks       String  @default("User's profile created by default.")
+  user_deletion_reason  String?
+  admin_deletion_reason String?
 
   role    Role @relation(fields: [role_id], references: [id])
   role_id Int
@@ -73,6 +77,9 @@ model Restaurant {
   restaurant_verification         String    @default("Pending")
   restaurant_verification_remarks String    @default("Verification is pending.")
   is_active                       Boolean   @default(true)
+  profile_remarks                 String    @default("Restaurant's profile created by default.")
+  restaurant_deletion_reason      String?
+  admin_deletion_reason           String?
 
   aadhar_no     String? @unique
   passport_no   String? @unique

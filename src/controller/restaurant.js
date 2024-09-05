@@ -11,14 +11,23 @@ const { ROLES } = require("../utills/constant");
 const restaurantAdminRegistration = async (req, h) => {
 	try {
 		const { name, email, contact_no, password, role_id } = req.payload;
+
 		const existingUser = await prisma.user.findFirst({
 			where: {
 				OR: [{ email: email }, { contact_no: contact_no }],
-				deleted_at: null,
 			},
 		});
 
 		if (existingUser) {
+			if (!existingUser.is_active) {
+				return h
+					.response({
+						success: false,
+						message:
+							"Restaurant profile is not active or has been deleted. Please contact the administrator for assistance.",
+					})
+					.code(403);
+			}
 			return h
 				.response({
 					success: false,
@@ -133,7 +142,7 @@ const restaurantLogin = async (req, h) => {
 				.response({
 					success: false,
 					message:
-						"Restaurant profile is not active. Please contact the administrator for support.",
+						"Restaurant profile is not active or has been deleted. Please contact the administrator for support.",
 				})
 				.code(403);
 		}
@@ -199,7 +208,7 @@ const restaurantProfile = async (req, h) => {
 				.response({
 					success: false,
 					message:
-						"Restaurant profile is not active. Please contact the administrator for support.",
+						"Restaurant profile is not active or has been deleted. Please contact the administrator for support.",
 				})
 				.code(403);
 		}
@@ -725,10 +734,87 @@ const changeRestaurantPassword = async (req, h) => {
 	}
 };
 
+// profile deletion by restaurant
+const restaurantProfileDeletionByUser = async (req, h) => {
+	try {
+		const restaurant = req.rootUser;
+		const { reason } = req.payload;
+
+		const updatedDetails = await prisma.restaurant.update({
+			where: {
+				id: restaurant.id,
+				is_active: true,
+				deleted_at: null,
+			},
+			data: {
+				is_active: false,
+				profile_remarks: "Account deleted by restaurant.",
+				restaurant_deletion_reason: reason,
+				deleted_at: new Date(),
+			},
+		});
+
+		return h
+			.response({
+				success: true,
+				message: "Restaurant profile deleted successfully.",
+				data: updatedDetails,
+			})
+			.code(200);
+	} catch (error) {
+		console.error(
+			"An error occurred while deleting the restaurant's account.",
+			error
+		);
+		return h
+			.response({ message: "Error while deleting restaurant's account." })
+			.code(500);
+	}
+};
+
+// profile deletion by admin
+const restaurantProfileDeletionByAdmin = async (req, h) => {
+	try {
+		const { restaurantId, reason } = req.payload;
+
+		const updatedDetails = await prisma.restaurant.update({
+			where: {
+				id: restaurantId,
+				is_active: true,
+				deleted_at: null,
+			},
+			data: {
+				is_active: false,
+				profile_remarks: "Account deleted by Admin.",
+				admin_deletion_reason: reason,
+				deleted_at: new Date(),
+			},
+		});
+
+		return h
+			.response({
+				success: true,
+				message: "Restaurant profile deleted successfully.",
+				data: updatedDetails,
+			})
+			.code(200);
+	} catch (error) {
+		console.error(
+			"An error occurred while deleting the restaurant's account.",
+			error
+		);
+		return h
+			.response({ message: "Error while deleting restaurant's account." })
+			.code(500);
+	}
+};
+
 module.exports = {
 	restaurantAdminRegistration,
 	restaurantLogin,
 	restaurantProfile,
 	restaurantProfileUpdate,
 	changeRestaurantPassword,
+	restaurantProfileDeletionByUser,
+	restaurantProfileDeletionByAdmin,
 };

@@ -14,11 +14,19 @@ const createUser = async (req, h) => {
 		const existingUser = await prisma.user.findFirst({
 			where: {
 				OR: [{ email: email }, { contact_no: contact_no }],
-				deleted_at: null,
 			},
 		});
 
 		if (existingUser) {
+			if (!existingUser.is_active) {
+				return h
+					.response({
+						success: false,
+						message:
+							"User profile is not active or has been deleted. Please contact the administrator for assistance.",
+					})
+					.code(403);
+			}
 			return h
 				.response({
 					message: "This user already exists. Please login.",
@@ -91,6 +99,8 @@ const userLogin = async (req, h) => {
 				password: true,
 				profile_image: true,
 				usercode: true,
+				is_active: true,
+				profile_remarks: true,
 				role: {
 					select: {
 						id: true,
@@ -100,14 +110,26 @@ const userLogin = async (req, h) => {
 				created_at: true,
 			},
 		});
+
 		if (!user) {
 			return h.response({ message: "User not found" }).code(404);
+		}
+
+		if (!user.is_active) {
+			return h
+				.response({
+					success: false,
+					message:
+						"User profile is not active or has been deleted. Please contact the administrator for assistance.",
+				})
+				.code(403);
 		}
 
 		const isMatch = await bcrypt.compare(password, user.password);
 		if (!isMatch) {
 			return h.response({ message: "Invalid password" }).code(400);
 		}
+
 		const token = jwt.sign({ email: user.email }, SECRET, {
 			expiresIn: "1d",
 		});
@@ -146,6 +168,8 @@ const me = async (req, h) => {
 				password: true,
 				profile_image: true,
 				usercode: true,
+				is_active: true,
+				profile_remarks: true,
 				role: {
 					select: {
 						id: true,
@@ -157,9 +181,19 @@ const me = async (req, h) => {
 			},
 		});
 
+		if (!user.is_active) {
+			return h
+				.response({
+					success: false,
+					message:
+						"User profile is not active or has been deleted. Please contact the administrator for assistance.",
+				})
+				.code(403);
+		}
+
 		return h
 			.response({
-				message: "User profile_image fetched successfully",
+				message: "User's profile fetched successfully",
 				data: user,
 			})
 			.code(200);
@@ -179,6 +213,7 @@ const editMyProfile = async (req, h) => {
 		const existingUser = await prisma.user.findUnique({
 			where: {
 				id: user.id,
+				is_active: true,
 				deleted_at: null,
 			},
 		});
@@ -291,6 +326,7 @@ const changeUserPassword = async (req, h) => {
 		const updatedPassword = await prisma.user.update({
 			where: {
 				id: user.id,
+				is_active: true,
 				deleted_at: null,
 			},
 			data: {
@@ -316,10 +352,87 @@ const changeUserPassword = async (req, h) => {
 	}
 };
 
+// profile deletion by user
+const profileDeletionByUser = async (req, h) => {
+	try {
+		const user = req.rootUser;
+		const { reason } = req.payload;
+
+		const updatedUser = await prisma.user.update({
+			where: {
+				id: user.id,
+				is_active: true,
+				deleted_at: null,
+			},
+			data: {
+				is_active: false,
+				profile_remarks: "Account deleted by user.",
+				user_deletion_reason: reason,
+				deleted_at: new Date(),
+			},
+		});
+
+		return h
+			.response({
+				success: true,
+				message: "User profile deleted successfully.",
+				data: updatedUser,
+			})
+			.code(200);
+	} catch (error) {
+		console.error(
+			"An error occurred while deleting the user's account.",
+			error
+		);
+		return h
+			.response({ message: "Error while deleting user's account." })
+			.code(500);
+	}
+};
+
+// profile deletion by admin
+const profileDeletionByAdmin = async (req, h) => {
+	try {
+		const { userId, reason } = req.payload;
+
+		const updatedUser = await prisma.user.update({
+			where: {
+				id: userId,
+				is_active: true,
+				deleted_at: null,
+			},
+			data: {
+				is_active: false,
+				profile_remarks: "Account deleted by Admin.",
+				admin_deletion_reason: reason,
+				deleted_at: new Date(),
+			},
+		});
+
+		return h
+			.response({
+				success: true,
+				message: "User profile deleted successfully.",
+				data: updatedUser,
+			})
+			.code(200);
+	} catch (error) {
+		console.error(
+			"An error occurred while deleting the user's account.",
+			error
+		);
+		return h
+			.response({ message: "Error while deleting user's account." })
+			.code(500);
+	}
+};
+
 module.exports = {
 	createUser,
 	userLogin,
 	me,
 	editMyProfile,
 	changeUserPassword,
+	profileDeletionByUser,
+	profileDeletionByAdmin,
 };

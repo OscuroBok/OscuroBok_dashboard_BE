@@ -8,6 +8,8 @@ const {
 	verifyOtpValidation,
 	editUserValidation,
 	userPasswordChangeValidation,
+	userProfileDeletionValidation,
+	userProfileDeletionByAdminValidation,
 } = require("../validations/user");
 const contactNoPattern = /^(\+|\d)[0-9]{7,16}$/;
 
@@ -145,6 +147,82 @@ module.exports = [
 			pre: [Authentication],
 			validate: {
 				...userPasswordChangeValidation,
+				failAction: (request, h, err) => {
+					const customErrorMessages = err.details.map(
+						(detail) => detail.message
+					);
+					return h
+						.response({
+							statusCode: 400,
+							error: "Bad Request",
+							message: customErrorMessages,
+						})
+						.code(400)
+						.takeover();
+				},
+			},
+			payload: {
+				parse: true,
+				allow: ["application/json"],
+			},
+			plugins: {
+				"hapi-swagger": {
+					payloadType: "json",
+					responseMessages: [],
+				},
+			},
+		},
+	},
+
+	// profile deletion by user
+	{
+		method: "POST",
+		path: "/user-profile-deletion",
+		options: {
+			tags: ["api", "User"],
+			handler: controller.profileDeletionByUser,
+			description: "User profile deletion by user",
+			pre: [Authentication],
+			validate: {
+				...userProfileDeletionValidation,
+				failAction: (request, h, err) => {
+					const customErrorMessages = err.details.map(
+						(detail) => detail.message
+					);
+					return h
+						.response({
+							statusCode: 400,
+							error: "Bad Request",
+							message: customErrorMessages,
+						})
+						.code(400)
+						.takeover();
+				},
+			},
+			payload: {
+				parse: true,
+				allow: ["application/json"],
+			},
+			plugins: {
+				"hapi-swagger": {
+					payloadType: "json",
+					responseMessages: [],
+				},
+			},
+		},
+	},
+
+	// profile deletion by admin
+	{
+		method: "POST",
+		path: "/user-profile-deletion-admin",
+		options: {
+			tags: ["api", "User"],
+			handler: controller.profileDeletionByAdmin,
+			description: "User profile deletion by Admin",
+			// pre: [Authentication],
+			validate: {
+				...userProfileDeletionByAdminValidation,
 				failAction: (request, h, err) => {
 					const customErrorMessages = err.details.map(
 						(detail) => detail.message

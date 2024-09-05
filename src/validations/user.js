@@ -51,9 +51,26 @@ const userPasswordChangeValidation = {
 	}),
 };
 
+// profile deletion by user
+const userProfileDeletionValidation = {
+	payload: Joi.object({
+		reason: Joi.string().required().label("reason"),
+	}),
+};
+
+// profile deletion by admin
+const userProfileDeletionByAdminValidation = {
+	payload: Joi.object({
+		userId: Joi.number().required().label("userId"),
+		reason: Joi.string().required().label("reason"),
+	}),
+};
+
 module.exports = {
 	createUserValidation,
 	loginUserValidation,
 	editUserValidation,
 	userPasswordChangeValidation,
+	userProfileDeletionValidation,
+	userProfileDeletionByAdminValidation,
 };

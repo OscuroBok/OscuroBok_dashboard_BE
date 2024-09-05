@@ -4,7 +4,9 @@ const {
 	restaurantAdminValidation,
 	restaurantLoginValidation,
 	restaurantProfileUpdateValidation,
-	restaurantPasswordChangeValidation
+	restaurantPasswordChangeValidation,
+	restaurantProfileDeletionValidation,
+	restaurantProfileDeletionByAdminValidation,
 } = require("../validations/restaurant");
 
 module.exports = [
@@ -140,6 +142,82 @@ module.exports = [
 			pre: [Authentication],
 			validate: {
 				...restaurantPasswordChangeValidation,
+				failAction: (request, h, err) => {
+					const customErrorMessages = err.details.map(
+						(detail) => detail.message
+					);
+					return h
+						.response({
+							statusCode: 400,
+							error: "Bad Request",
+							message: customErrorMessages,
+						})
+						.code(400)
+						.takeover();
+				},
+			},
+			payload: {
+				parse: true,
+				allow: ["application/json"],
+			},
+			plugins: {
+				"hapi-swagger": {
+					payloadType: "json",
+					responseMessages: [],
+				},
+			},
+		},
+	},
+
+	// profile deletion by restaurant
+	{
+		method: "POST",
+		path: "/restaurant-profile-deletion",
+		options: {
+			tags: ["api", "Restaurant"],
+			handler: controller.restaurantProfileDeletionByUser,
+			description: "Restaurant profile deletion by user",
+			pre: [Authentication],
+			validate: {
+				...restaurantProfileDeletionValidation,
+				failAction: (request, h, err) => {
+					const customErrorMessages = err.details.map(
+						(detail) => detail.message
+					);
+					return h
+						.response({
+							statusCode: 400,
+							error: "Bad Request",
+							message: customErrorMessages,
+						})
+						.code(400)
+						.takeover();
+				},
+			},
+			payload: {
+				parse: true,
+				allow: ["application/json"],
+			},
+			plugins: {
+				"hapi-swagger": {
+					payloadType: "json",
+					responseMessages: [],
+				},
+			},
+		},
+	},
+
+	// profile deletion by admin
+	{
+		method: "POST",
+		path: "/restaurant-profile-deletion-admin",
+		options: {
+			tags: ["api", "Restaurant"],
+			handler: controller.restaurantProfileDeletionByAdmin,
+			description: "Restaurant profile deletion by Admin",
+			// pre: [Authentication],
+			validate: {
+				...restaurantProfileDeletionByAdminValidation,
 				failAction: (request, h, err) => {
 					const customErrorMessages = err.details.map(
 						(detail) => detail.message

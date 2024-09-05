@@ -125,9 +125,26 @@ const restaurantPasswordChangeValidation = {
 	}),
 };
 
+// profile deletion by restaurant
+const restaurantProfileDeletionValidation = {
+	payload: Joi.object({
+		reason: Joi.string().required().label("reason"),
+	}),
+};
+
+// profile deletion by admin
+const restaurantProfileDeletionByAdminValidation = {
+	payload: Joi.object({
+		restaurantId: Joi.string().required().label("restaurantId"),
+		reason: Joi.string().required().label("reason"),
+	}),
+};
+
 module.exports = {
 	restaurantAdminValidation,
 	restaurantLoginValidation,
 	restaurantProfileUpdateValidation,
 	restaurantPasswordChangeValidation,
+	restaurantProfileDeletionValidation,
+	restaurantProfileDeletionByAdminValidation,
 };
