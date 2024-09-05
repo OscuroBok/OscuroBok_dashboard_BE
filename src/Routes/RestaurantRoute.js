@@ -171,12 +171,12 @@ module.exports = [
 
 	// profile deletion by restaurant
 	{
-		method: "POST",
+		method: "DELETE",
 		path: "/restaurant-profile-deletion",
 		options: {
 			tags: ["api", "Restaurant"],
 			handler: controller.restaurantProfileDeletionByUser,
-			description: "Restaurant profile deletion by user",
+			description: "Restaurant profile deletion by restaurant",
 			pre: [Authentication],
 			validate: {
 				...restaurantProfileDeletionValidation,
@@ -209,7 +209,7 @@ module.exports = [
 
 	// profile deletion by admin
 	{
-		method: "POST",
+		method: "DELETE",
 		path: "/restaurant-profile-deletion-admin",
 		options: {
 			tags: ["api", "Restaurant"],

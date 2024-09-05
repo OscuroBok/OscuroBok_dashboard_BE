@@ -176,7 +176,7 @@ module.exports = [
 
 	// profile deletion by user
 	{
-		method: "POST",
+		method: "DELETE",
 		path: "/user-profile-deletion",
 		options: {
 			tags: ["api", "User"],
@@ -214,7 +214,7 @@ module.exports = [
 
 	// profile deletion by admin
 	{
-		method: "POST",
+		method: "DELETE",
 		path: "/user-profile-deletion-admin",
 		options: {
 			tags: ["api", "User"],
