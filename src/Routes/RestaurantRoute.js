@@ -1,29 +1,25 @@
 const { Authentication } = require("../config/auth");
-const controller = require("../controller/user");
-const Joi = require("joi");
+const controller = require("../controller/restaurant");
 const {
-	createUserValidation,
-	loginUserValidation,
-	userOtpValidation,
-	verifyOtpValidation,
-	editUserValidation,
-	userPasswordChangeValidation,
-	userProfileDeletionValidation,
-	userProfileDeletionByAdminValidation,
-} = require("../validations/user");
-const contactNoPattern = /^(\+|\d)[0-9]{7,16}$/;
+	restaurantAdminValidation,
+	restaurantLoginValidation,
+	restaurantProfileUpdateValidation,
+	restaurantPasswordChangeValidation,
+	restaurantProfileDeletionValidation,
+	restaurantProfileDeletionByAdminValidation,
+} = require("../validations/restaurant");
 
 module.exports = [
-	// user registration
+	// restaurant registration
 	{
 		method: "POST",
-		path: "/user-registration",
+		path: "/restaurant-registration",
 		options: {
-			tags: ["api", "User"],
-			handler: controller.createUser,
-			description: "User Registration",
+			tags: ["api", "Restaurant"],
+			handler: controller.restaurantAdminRegistration,
+			description: "Restaurant Admin Registration",
 			validate: {
-				...createUserValidation,
+				...restaurantAdminValidation,
 				failAction: (request, h, err) => {
 					const customErrorMessages = err.details.map(
 						(detail) => detail.message
@@ -51,17 +47,16 @@ module.exports = [
 		},
 	},
 
-	// login with email
+	// restaurant-admin-login
 	{
 		method: "POST",
-		path: "/login",
+		path: "/restaurant-login",
 		options: {
-			tags: ["api", "User"],
-			handler: controller.userLogin,
-			description: "User Login",
-			// validate: loginUserValidation,
+			tags: ["api", "Restaurant"],
+			handler: controller.restaurantLogin,
+			description: "Restaurant Login",
 			validate: {
-				...loginUserValidation,
+				...restaurantLoginValidation,
 				failAction: (request, h, err) => {
 					const customErrorMessages = err.details.map(
 						(detail) => detail.message
@@ -83,29 +78,29 @@ module.exports = [
 		},
 	},
 
-	// profile
+	// restaurant-admin-profile
 	{
 		method: "GET",
-		path: "/my-profile",
+		path: "/restaurant-profile",
 		options: {
-			tags: ["api", "User"],
-			handler: controller.me,
+			tags: ["api", "Restaurant"],
+			handler: controller.restaurantProfile,
 			pre: [Authentication],
-			description: "Get user profile",
+			description: "Get Restaurant Profile",
 		},
 	},
 
-	// edit profile
+	// restaurant-profile-updation
 	{
 		method: "PUT",
-		path: "/edit-me",
+		path: "/restaurant-profile-update",
 		options: {
-			tags: ["api", "User"],
-			handler: controller.editMyProfile,
-			description: "Update Profile",
+			tags: ["api", "Restaurant"],
+			handler: controller.restaurantProfileUpdate,
+			description: "Update Restaurant Profile",
 			pre: [Authentication],
 			validate: {
-				...editUserValidation,
+				...restaurantProfileUpdateValidation,
 				failAction: (request, h, err) => {
 					const customErrorMessages = err.details.map(
 						(detail) => detail.message
@@ -125,7 +120,7 @@ module.exports = [
 				parse: true,
 				allow: "multipart/form-data",
 				multipart: true,
-				maxBytes: 10485760, // 10MB limit
+				maxBytes: 41943040,
 			},
 			plugins: {
 				"hapi-swagger": {
@@ -136,17 +131,17 @@ module.exports = [
 		},
 	},
 
-	// change-user-password
+	// change-restaurant's-password
 	{
 		method: "POST",
-		path: "/user-password-change",
+		path: "/restaurant-password-change",
 		options: {
-			tags: ["api", "User"],
-			handler: controller.changeUserPassword,
-			description: "User profile's Password Change",
+			tags: ["api", "Restaurant"],
+			handler: controller.changeRestaurantPassword,
+			description: "Restaurant Profile Password Change",
 			pre: [Authentication],
 			validate: {
-				...userPasswordChangeValidation,
+				...restaurantPasswordChangeValidation,
 				failAction: (request, h, err) => {
 					const customErrorMessages = err.details.map(
 						(detail) => detail.message
@@ -174,17 +169,17 @@ module.exports = [
 		},
 	},
 
-	// profile deletion by user
+	// profile deletion by restaurant
 	{
 		method: "DELETE",
-		path: "/user-profile-deletion",
+		path: "/restaurant-profile-deletion",
 		options: {
-			tags: ["api", "User"],
-			handler: controller.profileDeletionByUser,
-			description: "User profile deletion by user",
+			tags: ["api", "Restaurant"],
+			handler: controller.restaurantProfileDeletionByUser,
+			description: "Restaurant profile deletion by restaurant",
 			pre: [Authentication],
 			validate: {
-				...userProfileDeletionValidation,
+				...restaurantProfileDeletionValidation,
 				failAction: (request, h, err) => {
 					const customErrorMessages = err.details.map(
 						(detail) => detail.message
@@ -215,14 +210,14 @@ module.exports = [
 	// profile deletion by admin
 	{
 		method: "DELETE",
-		path: "/user-profile-deletion-admin",
+		path: "/restaurant-profile-deletion-admin",
 		options: {
-			tags: ["api", "User"],
-			handler: controller.profileDeletionByAdmin,
-			description: "User profile deletion by Admin",
+			tags: ["api", "Restaurant"],
+			handler: controller.restaurantProfileDeletionByAdmin,
+			description: "Restaurant profile deletion by Admin",
 			// pre: [Authentication],
 			validate: {
-				...userProfileDeletionByAdminValidation,
+				...restaurantProfileDeletionByAdminValidation,
 				failAction: (request, h, err) => {
 					const customErrorMessages = err.details.map(
 						(detail) => detail.message
