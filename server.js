@@ -12,8 +12,12 @@ const server = Hapi.server({
     host: process.env.HOST || "localhost",
     routes: {
         cors: {
-            origin: ["*"],
-            additionalHeaders: ["cache-control", "x-requested-with"],
+            origin: ['*'], // Allow all origins
+            headers: ['Authorization', 'Content-Type', 'If-None-Match'], // Define allowed headers
+            exposedHeaders: ['WWW-Authenticate', 'Server-Authorization'],
+            additionalExposedHeaders: ['X-Custom-Header'],
+            maxAge: 60,
+            credentials: true // Allow credentials (cookies, authorization headers, etc.)
         },
     },
 });
