@@ -64,6 +64,7 @@ const restaurantAdminRegistration = async (req, h) => {
 					.code(400);
 		}
 
+		// password hashing
 		const hashedPassword = await bcrypt.hash(password, 10);
 		const user = await prisma.user.create({
 			data: {
