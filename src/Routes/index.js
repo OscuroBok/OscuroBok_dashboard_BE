@@ -1,5 +1,7 @@
 const user = require("./UserRoute");
 const restaurant = require("./RestaurantRoute");
+const admin = require("./admin");
+
 
 module.exports = {
 	name: "base-route",
@@ -7,5 +9,6 @@ module.exports = {
 	register: (server, options) => {
 		server.route(user);
 		server.route(restaurant);
+		server.route(admin);
 	},
 };

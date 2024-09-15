@@ -8,7 +8,8 @@
     "start": "nodemon server.js",
     "db:migrate": "prisma migrate dev --name",
     "db:migrate_all": "prisma migrate dev --skip-generate --skip-seed",
-    "seed:role": "node ./src/seeder/role-seeder.js"
+    "seed:role": "node ./src/seeder/role-seeder.js",
+    "seed:admin": "node ./src/seeder/admin-seeder.js"
   },
   "prisma": {
     "seed": "node ./src/seeder/role-seeder.js"
