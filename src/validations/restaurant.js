@@ -35,7 +35,12 @@ const restaurantProfileUpdateValidation = {
 			.message("Please provide a valid contact number")
 			.optional()
 			.label("contact_no"),
-		address: Joi.string().optional().label("address"),
+		street_address: Joi.string().optional().label("street_address"),
+		city: Joi.string().optional().label("city"),
+		state: Joi.string().optional().label("state"),
+		country: Joi.string().optional().label("country"),
+		pin_code: Joi.string().optional().label("pin_code"),
+		landmark: Joi.string().optional().label("landmark(if any)"),
 		whatsapp_no: Joi.string()
 			.regex(contactNoPattern)
 			.message("Please provide a valid contact number")
@@ -135,8 +140,127 @@ const restaurantProfileDeletionValidation = {
 // profile deletion by admin
 const restaurantProfileDeletionByAdminValidation = {
 	payload: Joi.object({
-		restaurantId: Joi.string().required().label("restaurantId"),
+		restaurantId: Joi.number().required().label("restaurantId"),
 		reason: Joi.string().required().label("reason"),
+	}),
+};
+
+// restaurant post uploadation
+const restaurantPostUploadValidation = {
+	payload: Joi.object({
+		post_image: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.required()
+			.label("post_image"),
+		title: Joi.string().required().label("title"),
+		description: Joi.string().optional().label("description"),
+	}),
+};
+
+// restaurant post updation
+const restaurantPostUpdateValidation = {
+	payload: Joi.object({
+		post_id: Joi.number().required().label("post_id"),
+		post_image: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.optional()
+			.label("post_image"),
+		title: Joi.string().optional().label("title"),
+		description: Joi.string().optional().label("description"),
+	}),
+};
+
+// restaurant post deletion by restaurant
+const restaurantPostDeleteValidation = {
+	payload: Joi.object({
+		post_id: Joi.number().required().label("post_id"),
+	}),
+};
+
+// restaurant menu image uploadation
+const restaurantMenuUploadValidation = {
+	payload: Joi.object({
+		menu_image_1: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.required()
+			.label("menu_image_1"),
+		menu_image_2: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.optional()
+			.label("menu_image_2"),
+		menu_image_3: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.optional()
+			.label("menu_image_3"),
+		menu_image_4: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.optional()
+			.label("menu_image_4"),
+		menu_image_5: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.optional()
+			.label("menu_image_5"),
+		menu_image_6: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.optional()
+			.label("menu_image_6"),
+		menu_image_7: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.optional()
+			.label("menu_image_7"),
+		menu_image_8: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.optional()
+			.label("menu_image_8"),
+		menu_image_9: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.optional()
+			.label("menu_image_9"),
+		menu_image_10: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.optional()
+			.label("menu_image_10"),
+	}),
+};
+
+// restaurant menu image update
+const restaurantMenuUpdateValidation = {
+	payload: Joi.object({
+		menu_id: Joi.number().required().label("menu_id"),
+		menu_image: Joi.any()
+			.meta({ swaggerType: "file" })
+			.description("File to upload")
+			.required()
+			.label("menu_image"),
+	}),
+};
+
+// restaurant menu image deletion
+const restaurantMenuDeleteValidation = {
+	payload: Joi.object({
+		image_ids: Joi.array()
+			.items(
+				Joi.number()
+					.required()
+					.description("ID of the image to delete")
+					.label("image_id")
+			)
+			.min(1)
+			.required()
+			.description("Array of image IDs to delete")
+			.label("image_ids"),
 	}),
 };
 
@@ -147,4 +271,10 @@ module.exports = {
 	restaurantPasswordChangeValidation,
 	restaurantProfileDeletionValidation,
 	restaurantProfileDeletionByAdminValidation,
+	restaurantPostUploadValidation,
+	restaurantPostUpdateValidation,
+	restaurantPostDeleteValidation,
+	restaurantMenuUploadValidation,
+	restaurantMenuUpdateValidation,
+	restaurantMenuDeleteValidation,
 };

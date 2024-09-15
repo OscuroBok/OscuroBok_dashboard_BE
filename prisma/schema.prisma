@@ -15,7 +15,8 @@ model User {
   name                  String
   email                 String  @unique
   contact_no            String
-  location              String?
+  location              Json?
+  gender                String?
   password              String
   profile_image         String?
   usercode              String
@@ -54,22 +55,20 @@ model Restaurant {
   whatsapp_no                     String?
   email                           String    @unique
   password                        String
-  address                         String?
-  geo_loc_lat                     Float?
-  geo_loc_lng                     Float?
+  address                         Json?
+  geo_location                    Json?
   date_of_estd                    String?
   biography                       String?
   restaurant_capacity             Int?
-  restaurant_type                 String?
-  services                        String?
+  night_life                      String    @default("Restaurant")
+  services                        Json?
   open_time                       DateTime?
   close_time                      DateTime?
-  types_of_cuisines               String?
-  operational_days                String?
+  types_of_cuisines               Json?
+  operational_days                Json?
   insta_link                      String?
   fb_link                         String?
   x_link                          String?
-  menu                            String?
   logo                            String?
   cover_img                       String?
   rating                          Float     @default(0.0)
@@ -99,12 +98,54 @@ model Restaurant {
   bank_ifsc    String?
   bank_micr    String?
 
+  total_sales Int @default(0)
+  order_count Int @default(0)
+  followers   Int @default(0)
+
   user_id Int
   user    User @relation(fields: [user_id], references: [id])
+
+  Post Post[]
+  File File[]
 
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
 
   @@map("restaurants")
+}
+
+model Post {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+
+  restaurant_id Int
+  Restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
+
+  File File[]
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@map("posts")
+}
+
+model File {
+  id        Int    @id @default(autoincrement())
+  file_type String
+  file_name String
+
+  post_id Int?
+  post    Post? @relation(fields: [post_id], references: [id])
+
+  restaurant_id Int
+  Restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@map("files")
 }

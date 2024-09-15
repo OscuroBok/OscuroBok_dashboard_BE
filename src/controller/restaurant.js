@@ -64,41 +64,39 @@ const restaurantAdminRegistration = async (req, h) => {
 					.code(400);
 		}
 
-		// password hashing
 		const hashedPassword = await bcrypt.hash(password, 10);
-		const user = await prisma.user.create({
-			data: {
-				name,
-				email,
-				contact_no,
-				password: hashedPassword,
-				role_id: roleExists.id,
-				usercode,
-			},
-		});
 
-		if (roleExists.role === ROLES.RESTAURANT_OWNER) {
-			const restaurant_code = `RST${uuidv4().substring(0, 6)}`;
-			await prisma.restaurant.create({
+		await prisma.$transaction(async (prisma) => {
+			const user = await prisma.user.create({
 				data: {
-					restaurant_code,
-					owner_name: name,
-					contact_no,
+					name,
 					email,
+					contact_no,
 					password: hashedPassword,
-					user_id: user.id,
+					role_id: roleExists.id,
+					usercode,
 				},
 			});
-		}
+
+			if (roleExists.role === ROLES.RESTAURANT_OWNER) {
+				const restaurant_code = `RST${uuidv4().substring(0, 6)}`;
+				await prisma.restaurant.create({
+					data: {
+						restaurant_code,
+						owner_name: name,
+						contact_no,
+						email,
+						password: hashedPassword,
+						user_id: user.id,
+					},
+				});
+			}
+		});
 
 		return h
 			.response({
 				success: true,
-				message:
-					roleExists.role === ROLES.RESTAURANT_OWNER
-						? "Restaurant profile created successfully."
-						: "User created successfully.",
-				data: user,
+				message: "Restaurant profile created successfully.",
 			})
 			.code(201);
 	} catch (error) {
@@ -168,7 +166,6 @@ const restaurantLogin = async (req, h) => {
 				success: true,
 				message: "Restaurant profile logged in successfully",
 				token: token,
-				data: restaurant,
 			})
 			.code(200);
 	} catch (error) {
@@ -193,6 +190,54 @@ const restaurantProfile = async (req, h) => {
 
 		const restaurant = await prisma.restaurant.findFirst({
 			where: { user_id: user.id, deleted_at: null },
+			select: {
+				id: true,
+				restaurant_name: true,
+				restaurant_code: true,
+				owner_name: true,
+				contact_no: true,
+				whatsapp_no: true,
+				email: true,
+				address: true,
+				geo_location: true,
+				date_of_estd: true,
+				biography: true,
+				restaurant_capacity: true,
+				night_life: true,
+				services: true,
+				open_time: true,
+				close_time: true,
+				types_of_cuisines: true,
+				operational_days: true,
+				insta_link: true,
+				fb_link: true,
+				x_link: true,
+				logo: true,
+				cover_img: true,
+				rating: 0,
+				average_price: true,
+				restaurant_verification: true,
+				is_active: true,
+				aadhar_no: true,
+				passport_no: true,
+				reg_cert_no: true,
+				fssai_no: true,
+				gstin_no: true,
+				aadhar_file: true,
+				passport_file: true,
+				reg_cert_file: true,
+				fssai_file: true,
+				gstin_file: true,
+				bank_name: true,
+				bank_ac_name: true,
+				bank_ac_no: true,
+				bank_branch: true,
+				bank_ifsc: true,
+				bank_micr: true,
+				total_sales: true,
+				order_count: true,
+				followers: true,
+			},
 		});
 
 		if (!restaurant) {
@@ -241,14 +286,19 @@ const restaurantProfileUpdate = async (req, h) => {
 			restaurant_name,
 			owner_name,
 			contact_no,
-			address,
+			street_address,
+			city,
+			state,
+			country,
+			pin_code,
+			landmark,
 			whatsapp_no,
 			geo_loc_lat,
 			geo_loc_lng,
 			date_of_estd,
 			biography,
 			restaurant_capacity,
-			restaurant_type,
+			night_life,
 			services,
 			open_time,
 			close_time,
@@ -335,7 +385,7 @@ const restaurantProfileUpdate = async (req, h) => {
 		});
 
 		const checkFields = async (newValue, existingValue, displayName) => {
-			if (newValue && newValue === existingValue) {
+			if (newValue && existingValue && newValue === existingValue) {
 				return displayName;
 			}
 			return null;
@@ -357,7 +407,28 @@ const restaurantProfileUpdate = async (req, h) => {
 				existingRestaurant.contact_no,
 				"Contact number"
 			),
-			checkFields(address, existingRestaurant.address, "Address"),
+			checkFields(
+				street_address,
+				existingRestaurant.address?.street_address,
+				"Street Address"
+			),
+			checkFields(city, existingRestaurant.address?.city, "City"),
+			checkFields(state, existingRestaurant.address?.state, "State"),
+			checkFields(
+				country,
+				existingRestaurant.address?.country,
+				"Country"
+			),
+			checkFields(
+				pin_code,
+				existingRestaurant.address?.pin_code,
+				"Pin Code"
+			),
+			checkFields(
+				landmark,
+				existingRestaurant.address?.landmark,
+				"Landmark"
+			),
 			checkFields(
 				whatsapp_no,
 				existingRestaurant.whatsapp_no,
@@ -365,12 +436,12 @@ const restaurantProfileUpdate = async (req, h) => {
 			),
 			checkFields(
 				geo_loc_lat,
-				existingRestaurant.geo_loc_lat,
+				existingRestaurant.geo_location?.lat,
 				"Geo-location latitude"
 			),
 			checkFields(
 				geo_loc_lng,
-				existingRestaurant.geo_loc_lng,
+				existingRestaurant.geo_location?.lng,
 				"Geo-location longitude"
 			),
 			checkFields(
@@ -385,9 +456,9 @@ const restaurantProfileUpdate = async (req, h) => {
 				"Restaurant capacity"
 			),
 			checkFields(
-				restaurant_type,
-				existingRestaurant.restaurant_type,
-				"Restaurant type"
+				night_life,
+				existingRestaurant.night_life,
+				"Restaurant capacity"
 			),
 			checkFields(services, existingRestaurant.services, "Services"),
 			checkFields(
@@ -597,17 +668,23 @@ const restaurantProfileUpdate = async (req, h) => {
 					restaurant_name ?? existingRestaurant.restaurant_name,
 				owner_name: owner_name ?? existingRestaurant.owner_name,
 				contact_no: contact_no ?? existingRestaurant.contact_no,
-				address: address ?? existingRestaurant.address,
+				address:
+					{
+						street_address: street_address,
+						city: city,
+						state: state,
+						country: country,
+						pin_code: pin_code,
+						landmark: landmark,
+					} ?? existingRestaurant.address,
 				whatsapp_no: whatsapp_no ?? existingRestaurant.whatsapp_no,
-				geo_loc_lat: geo_loc_lat ?? existingRestaurant.geo_loc_lat,
-				geo_loc_lng: geo_loc_lng ?? existingRestaurant.geo_loc_lng,
+				geo_location: { lat: geo_loc_lat, lng: geo_loc_lng },
 				date_of_estd: date_of_estd ?? existingRestaurant.date_of_estd,
 				biography: biography ?? existingRestaurant.biography,
 				restaurant_capacity:
 					restaurant_capacity ??
 					existingRestaurant.restaurant_capacity,
-				restaurant_type:
-					restaurant_type ?? existingRestaurant.restaurant_type,
+				night_life: night_life ?? existingRestaurant.night_life,
 				services: services ?? existingRestaurant.services,
 				open_time: open_time ?? existingRestaurant.open_time,
 				close_time: close_time ?? existingRestaurant.close_time,
@@ -810,6 +887,521 @@ const restaurantProfileDeletionByAdmin = async (req, h) => {
 	}
 };
 
+// restaurant's post uploadation
+const restaurantPostUploadation = async (req, h) => {
+	try {
+		const restaurant = req.rootUser;
+		const { post_image, title, description } = req.payload;
+
+		let uniqueFilename;
+		if (post_image && post_image.hapi && post_image.hapi.filename) {
+			const uploadDir = path.join(__dirname, "..", "uploads");
+
+			uniqueFilename = `${Date.now()}_${post_image.hapi.filename}`;
+			const uploadPath = path.join(uploadDir, uniqueFilename);
+
+			if (!fs.existsSync(uploadDir)) {
+				fs.mkdirSync(uploadDir, { recursive: true });
+			}
+
+			const fileStream = fs.createWriteStream(uploadPath);
+			post_image.pipe(fileStream);
+		}
+
+		//  prisma transaction
+		await prisma.$transaction(async (prisma) => {
+			const post = await prisma.post.create({
+				data: {
+					title,
+					description,
+					restaurant_id: restaurant.id,
+				},
+				select: {
+					id: true,
+					title: true,
+					description: true,
+				},
+			});
+
+			const file = await prisma.file.create({
+				data: {
+					file_type: "post",
+					file_name: uniqueFilename,
+					post_id: post.id,
+					restaurant_id: restaurant.id,
+				},
+				select: {
+					file_name: true,
+				},
+			});
+		});
+
+		return h
+			.response({
+				success: true,
+				message: "Restaurant post created successfully.",
+			})
+			.code(200);
+	} catch (error) {
+		console.error(
+			"An error occurred while uploading the restaurant's post.",
+			error
+		);
+		return h
+			.response({ message: "Error while uploading restaurant's post." })
+			.code(500);
+	}
+};
+
+// show restaurant posts
+const restaurantPosts = async (req, h) => {
+	try {
+		const restaurant = req.rootUser;
+		const posts = await prisma.post.findMany({
+			where: {
+				restaurant_id: restaurant.id,
+			},
+			select: {
+				id: true,
+				title: true,
+				description: true,
+				File: {
+					where: {
+						file_type: "post",
+					},
+					select: {
+						file_name: true,
+					},
+				},
+			},
+		});
+
+		if (posts.length === 0) {
+			return h
+				.response({
+					success: true,
+					message: "Restaurant has no posts to display.",
+					data: [],
+				})
+				.code(200);
+		}
+
+		return h
+			.response({
+				success: true,
+				message: "Restaurant's post(s) fetched successfully.",
+				data: posts,
+			})
+			.code(200);
+	} catch (error) {
+		console.error(error);
+		return h
+			.response({
+				success: false,
+				message: "Error fetching restaurant's post(s).",
+				error,
+			})
+			.code(500);
+	}
+};
+
+// restaurant post updation
+const restaurantPostUpdation = async (req, h) => {
+	try {
+		const restaurant = req.rootUser;
+		const { post_id, post_image, title, description } = req.payload;
+
+		const existingPost = await prisma.post.findFirst({
+			where: {
+				id: post_id,
+				restaurant_id: restaurant.id,
+				deleted_at: null,
+			},
+			include: {
+				File: true,
+			},
+		});
+
+		let uniqueFilename;
+		if (post_image && post_image.hapi && post_image.hapi.filename) {
+			uniqueFilename = `${Date.now()}_${post_image.hapi.filename}`;
+		}
+
+		await prisma.$transaction(async (prisma) => {
+			await prisma.post.update({
+				where: {
+					id: post_id,
+				},
+				data: {
+					title,
+					description,
+				},
+			});
+
+			if (existingPost.File && existingPost.File.length > 0) {
+				await prisma.file.deleteMany({
+					where: {
+						post_id: post_id,
+						file_type: "post",
+					},
+				});
+
+				const uploadDir = path.join(__dirname, "..", "uploads");
+				const existingImagePath = path.join(
+					uploadDir,
+					existingPost.File[0].file_name
+				);
+
+				if (fs.existsSync(existingImagePath)) {
+					fs.unlinkSync(existingImagePath);
+				}
+			}
+
+			if (uniqueFilename) {
+				const uploadDir = path.join(__dirname, "..", "uploads");
+				const uploadPath = path.join(uploadDir, uniqueFilename);
+				if (!fs.existsSync(uploadDir)) {
+					fs.mkdirSync(uploadDir, { recursive: true });
+				}
+
+				const fileStream = fs.createWriteStream(uploadPath);
+				post_image.pipe(fileStream);
+
+				await prisma.file.create({
+					data: {
+						file_type: "post",
+						file_name: uniqueFilename,
+						post_id: post_id,
+						restaurant_id: restaurant.id,
+					},
+				});
+			}
+		});
+
+		return h
+			.response({
+				success: true,
+				message: "Restaurant post updated successfully.",
+			})
+			.code(200);
+	} catch (error) {
+		console.error(
+			"An error occurred while updating the restaurant's post:",
+			error
+		);
+		return h
+			.response({
+				success: false,
+				message: "Error while updating restaurant's post.",
+				error: error.message,
+			})
+			.code(500);
+	}
+};
+
+const restaurantPostDeletion = async (req, h) => {
+	try {
+		const restaurant = req.rootUser;
+		const { post_id } = req.payload;
+
+		const existingPost = await prisma.post.findFirst({
+			where: {
+				id: post_id,
+				restaurant_id: restaurant.id,
+				deleted_at: null,
+			},
+			include: {
+				File: true,
+			},
+		});
+
+		await prisma.$transaction(async (prisma) => {
+			await prisma.post.delete({
+				where: {
+					id: post_id,
+				},
+			});
+
+			if (existingPost.File && existingPost.File.length > 0) {
+				await prisma.file.deleteMany({
+					where: {
+						post_id: post_id,
+					},
+				});
+
+				const uploadDir = path.join(__dirname, "..", "uploads");
+				existingPost.File.forEach((file) => {
+					const filePath = path.join(uploadDir, file.file_name);
+					if (fs.existsSync(filePath)) {
+						fs.unlinkSync(filePath);
+					}
+				});
+			}
+		});
+
+		return h
+			.response({
+				success: true,
+				message:
+					"Restaurant's post and associated files deleted successfully.",
+			})
+			.code(200);
+	} catch (error) {
+		console.error(
+			"An error occurred while deleting the restaurant's post:",
+			error
+		);
+		return h
+			.response({
+				success: false,
+				message: "Error while deleting restaurant's post.",
+				error: error.message,
+			})
+			.code(500);
+	}
+};
+
+// restaurant's menu uploadation
+const restaurantMenuUploadation = async (req, h) => {
+	try {
+		const restaurant = req.rootUser;
+		const {
+			menu_image_1,
+			menu_image_2,
+			menu_image_3,
+			menu_image_4,
+			menu_image_5,
+			menu_image_6,
+			menu_image_7,
+			menu_image_8,
+			menu_image_9,
+			menu_image_10,
+		} = req.payload;
+
+		const uploadDir = path.join(__dirname, "..", "uploads");
+
+		if (!fs.existsSync(uploadDir)) {
+			fs.mkdirSync(uploadDir, { recursive: true });
+		}
+
+		const menu_images = [
+			menu_image_1,
+			menu_image_2,
+			menu_image_3,
+			menu_image_4,
+			menu_image_5,
+			menu_image_6,
+			menu_image_7,
+			menu_image_8,
+			menu_image_9,
+			menu_image_10,
+		];
+		const filePromises = [];
+
+		for (const menu_image of menu_images) {
+			if (menu_image && menu_image.hapi && menu_image.hapi.filename) {
+				const uniqueFilename = `${Date.now()}_${
+					menu_image.hapi.filename
+				}`;
+				const uploadPath = path.join(uploadDir, uniqueFilename);
+
+				const fileStream = fs.createWriteStream(uploadPath);
+				menu_image.pipe(fileStream);
+
+				filePromises.push(
+					prisma.file.create({
+						data: {
+							file_type: "menu",
+							file_name: uniqueFilename,
+							restaurant_id: restaurant.id,
+						},
+					})
+				);
+			}
+		}
+		await Promise.all(filePromises);
+
+		return h
+			.response({
+				success: true,
+				message: "Restaurant's menu uploaded successfully.",
+			})
+			.code(200);
+	} catch (error) {
+		console.error(
+			"An error occurred while uploading the restaurant's menu.",
+			error
+		);
+		return h
+			.response({
+				message: "Error while uploading restaurant's menu.",
+			})
+			.code(500);
+	}
+};
+
+// restaurant's menu display
+const restaurantMenuDisplay = async (req, h) => {
+	try {
+		const restaurant = req.rootUser;
+
+		const menuImages = await prisma.file.findMany({
+			where: {
+				restaurant_id: restaurant.id,
+				file_type: "menu",
+			},
+			select: {
+				id: true,
+				file_name: true,
+			},
+		});
+
+		if (!menuImages || menuImages.length === 0) {
+			return h
+				.response({
+					success: false,
+					message: "No menu images found for this restaurant.",
+				})
+				.code(404);
+		}
+
+		return h
+			.response({
+				success: true,
+				data: menuImages,
+			})
+			.code(200);
+	} catch (error) {
+		console.error(
+			"An error occurred while fetching the restaurant's menu.",
+			error
+		);
+		return h
+			.response({
+				message: "Error while fetching restaurant's menu.",
+			})
+			.code(500);
+	}
+};
+
+// restaurant's menu updation
+const restaurantMenuUpdation = async (req, h) => {
+	try {
+		const { menu_id, menu_image } = req.payload;
+		const restaurant = req.rootUser;
+
+		const menu = await prisma.file.findFirst({
+			where: {
+				id: menu_id,
+				restaurant_id: restaurant.id,
+				file_type: "menu",
+			},
+		});
+
+		const uploadDir = path.join(__dirname, "..", "uploads");
+		const oldFilePath = path.join(uploadDir, menu.file_name);
+
+		if (fs.existsSync(oldFilePath)) {
+			fs.unlinkSync(oldFilePath);
+		}
+
+		const uniqueFilename = `${Date.now()}_${menu_image.hapi.filename}`;
+		const uploadPath = path.join(uploadDir, uniqueFilename);
+		const fileStream = fs.createWriteStream(uploadPath);
+		menu_image.pipe(fileStream);
+
+		await prisma.file.update({
+			where: {
+				id: menu_id,
+			},
+			data: {
+				file_name: uniqueFilename,
+			},
+		});
+
+		return h
+			.response({
+				success: true,
+				message: "Menu image updated successfully.",
+			})
+			.code(200);
+	} catch (error) {
+		console.error(
+			"An error occurred while updating the restaurant's menu image.",
+			error
+		);
+		return h
+			.response({
+				message: "Error while updating restaurant's menu image.",
+			})
+			.code(500);
+	}
+};
+
+// restaurant's menu deletion
+const restaurantMenuDeletion = async (req, h) => {
+	try {
+		const restaurant = req.rootUser;
+		const { image_ids } = req.payload;
+
+		const deleteImages = await prisma.file.findMany({
+			where: {
+				id: {
+					in: image_ids,
+				},
+				restaurant_id: restaurant.id,
+				file_type: "menu",
+			},
+		});
+
+		if (!deleteImages || deleteImages.length === 0) {
+			return h
+				.response({
+					success: false,
+					message: "No menu images found for deletion.",
+				})
+				.code(404);
+		}
+
+		for (const image of deleteImages) {
+			const filePath = path.join(
+				__dirname,
+				"..",
+				"uploads",
+				image.file_name
+			);
+			if (fs.existsSync(filePath)) {
+				fs.unlinkSync(filePath);
+			}
+		}
+
+		await prisma.file.deleteMany({
+			where: {
+				id: {
+					in: image_ids,
+				},
+			},
+		});
+
+		return h
+			.response({
+				success: true,
+				message: "Menu image(s) deleted successfully.",
+			})
+			.code(200);
+	} catch (error) {
+		console.error(
+			"An error occurred while deleting the restaurant's menu image(s).",
+			error
+		);
+		return h
+			.response({
+				message: "Error while deleting restaurant's menu image(s).",
+			})
+			.code(500);
+	}
+};
+
 module.exports = {
 	restaurantAdminRegistration,
 	restaurantLogin,
@@ -818,4 +1410,12 @@ module.exports = {
 	changeRestaurantPassword,
 	restaurantProfileDeletionByUser,
 	restaurantProfileDeletionByAdmin,
+	restaurantPostUploadation,
+	restaurantPosts,
+	restaurantPostUpdation,
+	restaurantPostDeletion,
+	restaurantMenuUploadation,
+	restaurantMenuDisplay,
+	restaurantMenuUpdation,
+	restaurantMenuDeletion,
 };

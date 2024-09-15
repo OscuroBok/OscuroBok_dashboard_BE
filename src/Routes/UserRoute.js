@@ -89,7 +89,7 @@ module.exports = [
 		path: "/my-profile",
 		options: {
 			tags: ["api", "User"],
-			handler: controller.me,
+			handler: controller.showUserProfile,
 			pre: [Authentication],
 			description: "Get user profile",
 		},
