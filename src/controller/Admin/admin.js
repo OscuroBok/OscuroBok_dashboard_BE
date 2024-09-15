@@ -64,7 +64,60 @@ const fetchAllRestaurant = async (req, h) => {
     }
 }
 
+// inactive restaurant
+const fetchInActiveRestaurants = async (req, h) => {
+    try {
+        const inactiveRestaurants = await prisma.restaurant.findMany({
+            where: {
+                deleted_at: null,
+                is_active: false,
+            }
+        });
+        return h.response({ message: "Inactive restaurants fetched successfully.", data: inactiveRestaurants }).code(200)
+    } catch (error) {
+        console.log(error);
+        return h.response({ message: "Error while fetching inactive restaurant list", error }).code(500);
+    }
+}
+
+// counter api
+const restaurantCounter = async (req, h) => {
+    try {
+        const [active, inActive, unVerified,] = await Promise.all([
+            prisma.restaurant.count({
+                where: {
+                    deleted_at: null,
+                    is_active: true,
+                }
+            }),
+
+
+            prisma.restaurant.count({
+                where: {
+                    deleted_at: null,
+                    is_active: false,
+                }
+            }),
+
+            prisma.restaurant.count({
+                where: {
+                    deleted_at: null,
+                    restaurant_verification: "Pending",
+                }
+            }),
+
+
+        ])
+    } catch (error) {
+        console.log(error);
+        return h.response({ message: "Error while counting restaurant's data", error }).code(500);
+    }
+}
+
 module.exports = {
     adminLogin,
     fetchAllRestaurant,
+    fetchInActiveRestaurants,
+    restaurantCounter,
+
 }

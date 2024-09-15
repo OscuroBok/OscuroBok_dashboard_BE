@@ -31,4 +31,40 @@ module.exports = [
 
         },
     },
+
+    //  fetch all restaurant list
+    {
+        method: 'GET',
+        path: '/admin/all-restaurants',
+        options: {
+            tags: ['api', 'Admin'],
+            handler: controller.fetchAllRestaurant,
+            pre: [adminAuth],
+            description: "Fetch All Registered restaurants List",
+        }
+    },
+
+    // inactive restaurant
+    {
+        method: 'GET',
+        path: '/admin/inactive-restaurants',
+        options: {
+            tags: ['api', 'Admin'],
+            handler: controller.fetchInActiveRestaurants,
+            pre: [adminAuth],
+            description: "Fetch All InActive restaurant List",
+        }
+    },
+
+    // counter api
+    {
+        method: 'GET',
+        path: '/admin/count-restaurants-data',
+        options: {
+            tags: ['api', 'Admin'],
+            handler: controller.restaurantCounter,
+            pre: [adminAuth],
+            description: "Counter Api For All restaurants",
+        }
+    },
 ]
