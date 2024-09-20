@@ -1,5 +1,5 @@
 const { Authentication } = require("../config/auth");
-const controller = require("../controller/user");
+const controller = require("../controller/user.controller");
 const Joi = require("joi");
 const {
 	createUserValidation,
@@ -10,7 +10,7 @@ const {
 	userPasswordChangeValidation,
 	userProfileDeletionValidation,
 	userProfileDeletionByAdminValidation,
-} = require("../validations/user");
+} = require("../validations/user.validation");
 const contactNoPattern = /^(\+|\d)[0-9]{7,16}$/;
 
 module.exports = [

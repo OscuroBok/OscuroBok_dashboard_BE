@@ -1,5 +1,5 @@
 const { Authentication } = require("../config/auth");
-const controller = require("../controller/restaurant");
+const controller = require("../controller/restaurant.controller");
 const {
 	restaurantAdminValidation,
 	restaurantLoginValidation,
@@ -13,7 +13,7 @@ const {
 	restaurantMenuUploadValidation,
 	restaurantMenuUpdateValidation,
 	restaurantMenuDeleteValidation,
-} = require("../validations/restaurant");
+} = require("../validations/restaurant.validation");
 
 module.exports = [
 	// restaurant registration
@@ -512,6 +512,18 @@ module.exports = [
 					responseMessages: [],
 				},
 			},
+		},
+	},
+
+	// restaurant-reviews-display
+	{
+		method: "GET",
+		path: "/restaurant-reviews",
+		options: {
+			tags: ["api", "Restaurant"],
+			handler: controller.fetchRestaurantReviews,
+			pre: [Authentication],
+			description: "Display Restaurant's Reviews",
 		},
 	},
 ];

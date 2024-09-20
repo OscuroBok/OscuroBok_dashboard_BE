@@ -658,7 +658,7 @@ const restaurantProfileUpdate = async (req, h) => {
 			),
 		]);
 
-		const updatedData = await prisma.restaurant.update({
+		await prisma.restaurant.update({
 			where: {
 				id: restaurant.id,
 				deleted_at: null,
@@ -668,17 +668,21 @@ const restaurantProfileUpdate = async (req, h) => {
 					restaurant_name ?? existingRestaurant.restaurant_name,
 				owner_name: owner_name ?? existingRestaurant.owner_name,
 				contact_no: contact_no ?? existingRestaurant.contact_no,
-				address:
-					{
-						street_address: street_address,
-						city: city,
-						state: state,
-						country: country,
-						pin_code: pin_code,
-						landmark: landmark,
-					} ?? existingRestaurant.address,
+				address: {
+					street_address:
+						street_address ??
+						existingRestaurant.address?.street_address,
+					city: city ?? existingRestaurant.address?.city,
+					state: state ?? existingRestaurant.address?.state,
+					country: country ?? existingRestaurant.address?.country,
+					pin_code: pin_code ?? existingRestaurant.address?.pin_code,
+					landmark: landmark ?? existingRestaurant.address?.landmark,
+				},
 				whatsapp_no: whatsapp_no ?? existingRestaurant.whatsapp_no,
-				geo_location: { lat: geo_loc_lat, lng: geo_loc_lng },
+				geo_location: {
+					lat: geo_loc_lat ?? existingRestaurant.geo_location?.lat,
+					lng: geo_loc_lng ?? existingRestaurant.geo_location?.lng,
+				},
 				date_of_estd: date_of_estd ?? existingRestaurant.date_of_estd,
 				biography: biography ?? existingRestaurant.biography,
 				restaurant_capacity:
@@ -733,7 +737,6 @@ const restaurantProfileUpdate = async (req, h) => {
 			.response({
 				success: true,
 				message: "Restaurant Profile updated successfully.",
-				data: updatedData,
 			})
 			.code(200);
 	} catch (error) {
@@ -1161,22 +1164,11 @@ const restaurantPostDeletion = async (req, h) => {
 	}
 };
 
-// restaurant's menu uploadation
+// Restaurant's menu upload
 const restaurantMenuUploadation = async (req, h) => {
 	try {
 		const restaurant = req.rootUser;
-		const {
-			menu_image_1,
-			menu_image_2,
-			menu_image_3,
-			menu_image_4,
-			menu_image_5,
-			menu_image_6,
-			menu_image_7,
-			menu_image_8,
-			menu_image_9,
-			menu_image_10,
-		} = req.payload;
+		const { menu_images } = req.payload;
 
 		const uploadDir = path.join(__dirname, "..", "uploads");
 
@@ -1184,21 +1176,7 @@ const restaurantMenuUploadation = async (req, h) => {
 			fs.mkdirSync(uploadDir, { recursive: true });
 		}
 
-		const menu_images = [
-			menu_image_1,
-			menu_image_2,
-			menu_image_3,
-			menu_image_4,
-			menu_image_5,
-			menu_image_6,
-			menu_image_7,
-			menu_image_8,
-			menu_image_9,
-			menu_image_10,
-		];
-		const filePromises = [];
-
-		for (const menu_image of menu_images) {
+		const filePromises = menu_images.map(async (menu_image) => {
 			if (menu_image && menu_image.hapi && menu_image.hapi.filename) {
 				const uniqueFilename = `${Date.now()}_${
 					menu_image.hapi.filename
@@ -1208,33 +1186,36 @@ const restaurantMenuUploadation = async (req, h) => {
 				const fileStream = fs.createWriteStream(uploadPath);
 				menu_image.pipe(fileStream);
 
-				filePromises.push(
-					prisma.file.create({
-						data: {
-							file_type: "menu",
-							file_name: uniqueFilename,
-							restaurant_id: restaurant.id,
-						},
-					})
-				);
+				await new Promise((resolve, reject) => {
+					fileStream.on("finish", resolve);
+					fileStream.on("error", reject);
+				});
+
+				return prisma.file.create({
+					data: {
+						file_type: "menu",
+						file_name: uniqueFilename,
+						restaurant_id: restaurant.id,
+					},
+				});
 			}
-		}
+		});
 		await Promise.all(filePromises);
 
 		return h
 			.response({
 				success: true,
-				message: "Restaurant's menu uploaded successfully.",
+				message: "Restaurant's menu image(s) uploaded successfully.",
 			})
 			.code(200);
 	} catch (error) {
 		console.error(
-			"An error occurred while uploading the restaurant's menu.",
+			"An error occurred while uploading the restaurant's menu image(s).",
 			error
 		);
 		return h
 			.response({
-				message: "Error while uploading restaurant's menu.",
+				message: "Error while uploading restaurant's menu image(s).",
 			})
 			.code(500);
 	}
@@ -1402,6 +1383,194 @@ const restaurantMenuDeletion = async (req, h) => {
 	}
 };
 
+// display all reviews of the restaurant
+const fetchRestaurantReviews = async (req, h) => {
+	try {
+		const userId = req.userId;
+
+		const restaurant = await prisma.restaurant.findFirst({
+			where: {
+				id: Number(userId),
+				is_active: true,
+				deleted_at: null,
+			},
+		});
+
+		if (
+			!restaurant.restaurant_name ||
+			!restaurant.geo_location ||
+			!restaurant.geo_location.lat ||
+			!restaurant.geo_location.lng
+		) {
+			return h
+				.response({
+					success: false,
+					message: "Restaurant details are missing or incomplete.",
+				})
+				.code(400);
+		}
+
+		const restaurantName = restaurant.restaurant_name;
+		const location = `${restaurant.geo_location.lat},${restaurant.geo_location.lng}`;
+		const apiKey = process.env.GoogleMaps_API_KEY;
+		const radius = 5000;
+		const keywords = [
+			"restaurant",
+			"bar",
+			"pub",
+			"liquor",
+			"wine",
+			"cafe",
+			"nightclub",
+			"tavern",
+			"dining",
+			"brewery",
+			"distillery",
+			"liquor store",
+			"wine shop",
+			"cocktail bar",
+			"beer garden",
+			"bistro",
+			"lounge",
+			"steakhouse",
+			"pizzeria",
+			"gastropub",
+			"food court",
+			"canteen",
+			"eatery",
+			"brasserie",
+			"grill",
+			"taproom",
+			"speakeasy",
+			"food truck",
+			"patio bar",
+			"rooftop bar",
+			"diner",
+			"tapas bar",
+			"izakaya",
+			"sushi bar",
+			"buffet",
+			"carvery",
+			"inn",
+			"chophouse",
+			"tea house",
+			"tea room",
+			"delicatessen",
+			"food hall",
+			"trattoria",
+			"cafeteria",
+			"wine bar",
+			"dine-in",
+			"catering",
+			"brunch",
+		];
+
+		const getPlaceDetails = async (placeId, apiKey, sort) => {
+			const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${apiKey}&reviews_sort=${sort}`;
+			const response = await fetch(url);
+			const data = await response.json();
+			return data.status === "OK" ? data.result : {};
+		};
+
+		const findRestaurantByName = async (restaurantName, location) => {
+			const keywordString = keywords.join("|");
+			const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location}&radius=${radius}&keyword=${encodeURIComponent(
+				keywordString
+			)}&key=${apiKey}`;
+			const response = await fetch(url);
+			const data = await response.json();
+
+			if (data.status === "OK" && data.results.length > 0) {
+				const matchedPlace = data.results.find((place) =>
+					place.name
+						.toLowerCase()
+						.includes(restaurantName.toLowerCase())
+				);
+
+				if (matchedPlace) {
+					const placeDetailsMostRelevant = await getPlaceDetails(
+						matchedPlace.place_id,
+						apiKey,
+						"most_relevant"
+					);
+					const placeDetailsNewest = await getPlaceDetails(
+						matchedPlace.place_id,
+						apiKey,
+						"newest"
+					);
+
+					let output = {
+						place: matchedPlace.name,
+						address: matchedPlace.vicinity,
+						overallRating: matchedPlace.rating,
+						userRatingsTotal: matchedPlace.user_ratings_total,
+						reviews: [],
+					};
+
+					const combinedReviews = {};
+
+					(placeDetailsMostRelevant.reviews || []).forEach(
+						(review) => {
+							combinedReviews[review.author_name + review.text] =
+								{
+									reviewer: review.author_name,
+									rating: review.rating,
+									text: review.text,
+								};
+						}
+					);
+
+					(placeDetailsNewest.reviews || []).forEach((review) => {
+						const key = review.author_name + review.text;
+						if (!combinedReviews[key]) {
+							combinedReviews[key] = {
+								reviewer: review.author_name,
+								rating: review.rating,
+								text: review.text,
+							};
+						}
+					});
+
+					output.reviews = Object.values(combinedReviews);
+
+					if (output.reviews.length === 0) {
+						output.reviews.push({ text: "No reviews available." });
+					}
+
+					return { success: true, data: output };
+				} else {
+					return {
+						success: false,
+						message:
+							"Unable to fetch reviews at the moment. Please try again later.",
+					};
+				}
+			} else {
+				return {
+					success: false,
+					message:
+						"Unable to fetch reviews at the moment. Please try again later.",
+				};
+			}
+		};
+
+		const result = await findRestaurantByName(restaurantName, location);
+
+		return h.response(result).code(result.success ? 200 : 404);
+	} catch (error) {
+		console.error(
+			"An error occurred while fetching the restaurant's review:",
+			error
+		);
+		return h
+			.response({
+				success: false,
+				message: "Error while fetching the restaurant's review.",
+			})
+			.code(500);
+	}
+};
+
 module.exports = {
 	restaurantAdminRegistration,
 	restaurantLogin,
@@ -1418,4 +1587,5 @@ module.exports = {
 	restaurantMenuDisplay,
 	restaurantMenuUpdation,
 	restaurantMenuDeletion,
+	fetchRestaurantReviews,
 };

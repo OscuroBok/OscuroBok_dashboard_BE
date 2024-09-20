@@ -1,5 +1,5 @@
-const user = require("./UserRoute");
-const restaurant = require("./RestaurantRoute");
+const user = require("./user.route");
+const restaurant = require("./restaurant.route");
 
 module.exports = {
 	name: "base-route",

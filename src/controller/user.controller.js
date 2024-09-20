@@ -422,7 +422,7 @@ const profileDeletionByAdmin = async (req, h) => {
 	try {
 		const { userId, reason } = req.payload;
 
-		const updatedUser = await prisma.user.update({
+		await prisma.user.update({
 			where: {
 				id: userId,
 				is_active: true,

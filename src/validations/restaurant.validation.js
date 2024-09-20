@@ -182,56 +182,17 @@ const restaurantPostDeleteValidation = {
 // restaurant menu image uploadation
 const restaurantMenuUploadValidation = {
 	payload: Joi.object({
-		menu_image_1: Joi.any()
-			.meta({ swaggerType: "file" })
-			.description("File to upload")
+		menu_images: Joi.array()
+			.items(
+				Joi.any()
+					.meta({ swaggerType: "file" })
+					.description("Files to upload")
+					.required()
+					.label("menu_image")
+			)
 			.required()
-			.label("menu_image_1"),
-		menu_image_2: Joi.any()
-			.meta({ swaggerType: "file" })
-			.description("File to upload")
-			.optional()
-			.label("menu_image_2"),
-		menu_image_3: Joi.any()
-			.meta({ swaggerType: "file" })
-			.description("File to upload")
-			.optional()
-			.label("menu_image_3"),
-		menu_image_4: Joi.any()
-			.meta({ swaggerType: "file" })
-			.description("File to upload")
-			.optional()
-			.label("menu_image_4"),
-		menu_image_5: Joi.any()
-			.meta({ swaggerType: "file" })
-			.description("File to upload")
-			.optional()
-			.label("menu_image_5"),
-		menu_image_6: Joi.any()
-			.meta({ swaggerType: "file" })
-			.description("File to upload")
-			.optional()
-			.label("menu_image_6"),
-		menu_image_7: Joi.any()
-			.meta({ swaggerType: "file" })
-			.description("File to upload")
-			.optional()
-			.label("menu_image_7"),
-		menu_image_8: Joi.any()
-			.meta({ swaggerType: "file" })
-			.description("File to upload")
-			.optional()
-			.label("menu_image_8"),
-		menu_image_9: Joi.any()
-			.meta({ swaggerType: "file" })
-			.description("File to upload")
-			.optional()
-			.label("menu_image_9"),
-		menu_image_10: Joi.any()
-			.meta({ swaggerType: "file" })
-			.description("File to upload")
-			.optional()
-			.label("menu_image_10"),
+			.description("Array of menu images")
+			.label("menu_images"),
 	}),
 };
 
