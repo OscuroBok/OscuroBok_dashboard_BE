@@ -3,7 +3,6 @@ const controller = require("../controller/user.controller");
 const Joi = require("joi");
 const {
 	createUserValidation,
-	loginUserValidation,
 	userOtpValidation,
 	verifyOtpValidation,
 	editUserValidation,
@@ -47,38 +46,6 @@ module.exports = [
 					payloadType: "json",
 					responseMessages: [],
 				},
-			},
-		},
-	},
-
-	// login with email
-	{
-		method: "POST",
-		path: "/login",
-		options: {
-			tags: ["api", "User"],
-			handler: controller.userLogin,
-			description: "User Login",
-			// validate: loginUserValidation,
-			validate: {
-				...loginUserValidation,
-				failAction: (request, h, err) => {
-					const customErrorMessages = err.details.map(
-						(detail) => detail.message
-					);
-					return h
-						.response({
-							statusCode: 400,
-							error: "Bad Request",
-							message: customErrorMessages,
-						})
-						.code(400)
-						.takeover();
-				},
-			},
-			payload: {
-				allow: ["application/json"],
-				parse: true,
 			},
 		},
 	},

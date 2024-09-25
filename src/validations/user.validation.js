@@ -17,15 +17,7 @@ const createUserValidation = {
   }),
 };
 
-// login with email
-const loginUserValidation = {
-  payload: Joi.object({
-    email: Joi.string().required().label("email"),
-    password: Joi.string().required().label("password"),
-  }),
-};
-
-// edit user
+// edit user details
 const editUserValidation = {
   payload: Joi.object({
     name: Joi.string().optional().label("name"),
@@ -73,7 +65,6 @@ const userProfileDeletionByAdminValidation = {
 
 module.exports = {
   createUserValidation,
-  loginUserValidation,
   editUserValidation,
   userPasswordChangeValidation,
   userProfileDeletionValidation,

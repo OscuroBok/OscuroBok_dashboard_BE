@@ -111,71 +111,6 @@ const restaurantAdminRegistration = async (req, h) => {
 	}
 };
 
-// restaurant-admin-login
-const restaurantLogin = async (req, h) => {
-	try {
-		const { email, password } = req.payload;
-
-		const user = await prisma.user.findFirst({
-			where: {
-				email: email,
-				deleted_at: null,
-			},
-		});
-
-		const restaurant = await prisma.restaurant.findFirst({
-			where: { user_id: user.id, deleted_at: null },
-		});
-
-		if (!restaurant) {
-			return h
-				.response({
-					success: false,
-					message: "Unable to fetch restaurant's profile.",
-				})
-				.code(404);
-		}
-
-		if (!restaurant.is_active) {
-			return h
-				.response({
-					success: false,
-					message:
-						"Restaurant profile is not active or has been deleted. Please contact the administrator for support.",
-				})
-				.code(403);
-		}
-
-		const encryptedPassword = await bcrypt.compare(
-			password,
-			restaurant.password
-		);
-
-		if (!encryptedPassword) {
-			return h
-				.response({ success: false, message: "Invalid password" })
-				.code(400);
-		}
-
-		const token = jwt.sign({ email: restaurant.email }, SECRET, {
-			expiresIn: "1d",
-		});
-
-		return h
-			.response({
-				success: true,
-				message: "Restaurant profile logged in successfully",
-				token: token,
-			})
-			.code(200);
-	} catch (error) {
-		console.log(error);
-		return h
-			.response({ success: false, message: "Error while login.", error })
-			.code(500);
-	}
-};
-
 // restaurant-admin-profile
 const restaurantProfile = async (req, h) => {
 	try {
@@ -1573,7 +1508,6 @@ const fetchRestaurantReviews = async (req, h) => {
 
 module.exports = {
 	restaurantAdminRegistration,
-	restaurantLogin,
 	restaurantProfile,
 	restaurantProfileUpdate,
 	changeRestaurantPassword,

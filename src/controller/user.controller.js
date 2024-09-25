@@ -79,79 +79,14 @@ const createUser = async (req, h) => {
 	}
 };
 
-// User login with email
-const userLogin = async (req, h) => {
-	try {
-		const { email, password } = req.payload;
-
-		const user = await prisma.user.findFirst({
-			where: {
-				email: email,
-				deleted_at: null,
-			},
-			select: {
-				id: true,
-				name: true,
-				email: true,
-				contact_no: true,
-				location: true,
-				gender: true,
-				password: true,
-				profile_image: true,
-				usercode: true,
-				is_active: true,
-				profile_remarks: true,
-				role: {
-					select: {
-						id: true,
-						role: true,
-					},
-				},
-				created_at: true,
-			},
-		});
-
-		if (!user) {
-			return h.response({ message: "User not found" }).code(404);
-		}
-
-		if (!user.is_active) {
-			return h
-				.response({
-					success: false,
-					message:
-						"User profile is not active or has been deleted. Please contact the administrator for assistance.",
-				})
-				.code(403);
-		}
-
-		const isMatch = await bcrypt.compare(password, user.password);
-		if (!isMatch) {
-			return h.response({ message: "Invalid password" }).code(400);
-		}
-
-		const token = jwt.sign({ email: user.email }, SECRET, {
-			expiresIn: "1d",
-		});
-
-		return h
-			.response({
-				message: "Logged in sucessfully.",
-				token: token,
-			})
-			.code(200);
-	} catch (error) {
-		console.log(error);
-		return h.response({ message: "Error while login", error }).code(500);
-	}
-};
-
 // profile display
 const showUserProfile = async (req, h) => {
 	try {
 		const userId = req.userId;
+		const role = req.role;
+
 		if (!userId) {
-			return h.response({ message: "Unauthorized user" }).code(404);
+			return h.response({ message: "Unauthorized user" }).code(401);
 		}
 
 		const user = await prisma.user.findFirst({
@@ -165,7 +100,6 @@ const showUserProfile = async (req, h) => {
 				contact_no: true,
 				location: true,
 				gender: true,
-				password: true,
 				profile_image: true,
 				usercode: true,
 				is_active: true,
@@ -180,6 +114,16 @@ const showUserProfile = async (req, h) => {
 				updated_at: true,
 			},
 		});
+
+		if (user.role.role !== role) {
+			return h
+				.response({
+					success: false,
+					message:
+						"Your role does not have access to this resource. Please try logging in again.",
+				})
+				.code(403);
+		}
 
 		if (!user.is_active) {
 			return h
@@ -285,25 +229,26 @@ const editMyProfile = async (req, h) => {
 			const fileStream = fs.createWriteStream(uploadPath);
 			profile_image.pipe(fileStream);
 		}
-
-		const updatedData = await prisma.user.update({
+		await prisma.user.update({
 			where: {
 				id: user.id,
 				deleted_at: null,
 			},
 			data: {
-				name,
-				contact_no,
+				name: name ?? existingUser.name,
+				contact_no: contact_no ?? existingUser.contact_no,
 				location: {
-					street_address: street_address,
-					city: city,
-					state: state,
-					country: country,
-					pin_code: pin_code,
-					landmark: landmark,
+					street_address:
+						street_address ?? existingUser.location?.street_address,
+					city: city ?? existingUser.location?.city,
+					state: state ?? existingUser.location?.state,
+					country: country ?? existingUser.location?.country,
+					pin_code: pin_code ?? existingUser.location?.pin_code,
+					landmark: landmark ?? existingUser.location?.landmark,
 				},
-				gender,
+				gender: gender ?? existingUser.gender,
 				profile_image: uniqueFilename || existingUser.profile_image,
+				profile_remarks: "Profile information updated by the user.",
 			},
 		});
 
@@ -360,6 +305,7 @@ const changeUserPassword = async (req, h) => {
 			},
 			data: {
 				password: hashedPassword,
+				profile_remarks: "Profile password updated by the user.",
 			},
 		});
 
@@ -386,7 +332,7 @@ const profileDeletionByUser = async (req, h) => {
 		const user = req.rootUser;
 		const { reason } = req.payload;
 
-		const updatedUser = await prisma.user.update({
+		await prisma.user.update({
 			where: {
 				id: user.id,
 				is_active: true,
@@ -394,7 +340,7 @@ const profileDeletionByUser = async (req, h) => {
 			},
 			data: {
 				is_active: false,
-				profile_remarks: "Account deleted by user.",
+				profile_remarks: "Profile deleted by user.",
 				user_deletion_reason: reason,
 				deleted_at: new Date(),
 			},
@@ -455,7 +401,6 @@ const profileDeletionByAdmin = async (req, h) => {
 
 module.exports = {
 	createUser,
-	userLogin,
 	showUserProfile,
 	editMyProfile,
 	changeUserPassword,

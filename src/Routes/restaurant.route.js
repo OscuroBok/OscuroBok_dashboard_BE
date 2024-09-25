@@ -2,7 +2,6 @@ const { Authentication } = require("../config/auth");
 const controller = require("../controller/restaurant.controller");
 const {
 	restaurantAdminValidation,
-	restaurantLoginValidation,
 	restaurantProfileUpdateValidation,
 	restaurantPasswordChangeValidation,
 	restaurantProfileDeletionValidation,
@@ -49,37 +48,6 @@ module.exports = [
 					payloadType: "json",
 					responseMessages: [],
 				},
-			},
-		},
-	},
-
-	// restaurant-admin-login
-	{
-		method: "POST",
-		path: "/restaurant-login",
-		options: {
-			tags: ["api", "Restaurant"],
-			handler: controller.restaurantLogin,
-			description: "Restaurant Login",
-			validate: {
-				...restaurantLoginValidation,
-				failAction: (request, h, err) => {
-					const customErrorMessages = err.details.map(
-						(detail) => detail.message
-					);
-					return h
-						.response({
-							statusCode: 400,
-							error: "Bad Request",
-							message: customErrorMessages,
-						})
-						.code(400)
-						.takeover();
-				},
-			},
-			payload: {
-				allow: ["application/json"],
-				parse: true,
 			},
 		},
 	},

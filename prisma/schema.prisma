@@ -98,10 +98,6 @@ model Restaurant {
   bank_ifsc    String?
   bank_micr    String?
 
-  total_sales Int @default(0)
-  order_count Int @default(0)
-  followers   Int @default(0)
-
   user_id Int
   user    User @relation(fields: [user_id], references: [id])
 

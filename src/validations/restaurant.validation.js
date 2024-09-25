@@ -17,14 +17,6 @@ const restaurantAdminValidation = {
 	}),
 };
 
-// restaurant-admin-login
-const restaurantLoginValidation = {
-	payload: Joi.object({
-		email: Joi.string().required().label("email"),
-		password: Joi.string().required().label("password"),
-	}),
-};
-
 // restaurant-admin-profile-update
 const restaurantProfileUpdateValidation = {
 	payload: Joi.object({
@@ -227,7 +219,6 @@ const restaurantMenuDeleteValidation = {
 
 module.exports = {
 	restaurantAdminValidation,
-	restaurantLoginValidation,
 	restaurantProfileUpdateValidation,
 	restaurantPasswordChangeValidation,
 	restaurantProfileDeletionValidation,
