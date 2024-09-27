@@ -2,6 +2,7 @@ const prisma = require("../config/DbConfig");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const SECRET = process.env.SECRET;
+const { ROLES } = require("../utills/constant");
 
 // user and vendor login
 const userVendorLogin = async (req, h) => {
@@ -14,7 +15,12 @@ const userVendorLogin = async (req, h) => {
 				deleted_at: null,
 			},
 			include: {
-				role: true,
+				role: {
+					select: {
+						id: true,
+						role: true,
+					},
+				},
 			},
 		});
 
@@ -28,7 +34,7 @@ const userVendorLogin = async (req, h) => {
 				.code(404);
 		}
 
-		if (user.role.role === "User") {
+		if (user.role.role === ROLES.USER) {
 			const isPasswordValid = await bcrypt.compare(
 				password,
 				user.password
@@ -45,7 +51,7 @@ const userVendorLogin = async (req, h) => {
 			}
 
 			const token = jwt.sign(
-				{ email: user.email, role: "User" },
+				{ email: user.email, role: ROLES.USER },
 				SECRET,
 				{
 					expiresIn: "1d",
@@ -55,14 +61,14 @@ const userVendorLogin = async (req, h) => {
 			return h
 				.response({
 					success: true,
-					message: "User profile logged in successfully.",
+					message: "Logged in successfully.",
 					token: token,
-					role: "User",
+					role: ROLES.USER,
 				})
 				.code(200);
 		}
 
-		if (user.role.role === "Restaurant_Owner") {
+		if (user.role.role === ROLES.RESTAURANT_OWNER) {
 			const restaurant = await prisma.restaurant.findFirst({
 				where: { user_id: user.id, deleted_at: null },
 			});
@@ -92,7 +98,7 @@ const userVendorLogin = async (req, h) => {
 			}
 
 			const token = jwt.sign(
-				{ email: restaurant.email, role: "Restaurant_Owner" },
+				{ email: restaurant.email, role: ROLES.RESTAURANT_OWNER },
 				SECRET,
 				{
 					expiresIn: "1d",
@@ -102,9 +108,9 @@ const userVendorLogin = async (req, h) => {
 			return h
 				.response({
 					success: true,
-					message: "Restaurant profile logged in successfully.",
+					message: "Logged in successfully.",
 					token: token,
-					role: "Restaurant_Owner",
+					role: ROLES.RESTAURANT_OWNER,
 				})
 				.code(200);
 		}

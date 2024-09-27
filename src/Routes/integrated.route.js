@@ -7,7 +7,7 @@ module.exports = [
 		method: "POST",
 		path: "/auth/login",
 		options: {
-			tags: ["api", "Integrated"],
+			tags: ["api", "Login"],
 			handler: controller.userVendorLogin,
 			description: "User & Vendor Login",
 			validate: {

@@ -83,7 +83,6 @@ const createUser = async (req, h) => {
 const showUserProfile = async (req, h) => {
 	try {
 		const userId = req.userId;
-		const role = req.role;
 
 		if (!userId) {
 			return h.response({ message: "Unauthorized user" }).code(401);
@@ -114,16 +113,6 @@ const showUserProfile = async (req, h) => {
 				updated_at: true,
 			},
 		});
-
-		if (user.role.role !== role) {
-			return h
-				.response({
-					success: false,
-					message:
-						"Your role does not have access to this resource. Please try logging in again.",
-				})
-				.code(403);
-		}
 
 		if (!user.is_active) {
 			return h
