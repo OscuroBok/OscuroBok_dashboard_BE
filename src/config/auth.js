@@ -54,6 +54,22 @@ const adminAuth = async (req, h) => {
                 where: {
                     email: verifytoken.email
                 },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    password: true,
+                    contact_no: true,
+                    role: {
+                        select: {
+                            id: true,
+                            role: true,
+                        }
+                    },
+                    created_at: true,
+                    updated_at: true,
+                    deleted_at: true
+                }
             });
             // console.log("Root_User", rootUser)
 
