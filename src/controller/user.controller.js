@@ -56,7 +56,7 @@ const createUser = async (req, h) => {
 		}
 
 		const hashedPassword = await bcrypt.hash(password, 10);
-		const user = await prisma.user.create({
+		await prisma.user.create({
 			data: {
 				name,
 				email,
@@ -71,7 +71,6 @@ const createUser = async (req, h) => {
 			.response({
 				success: true,
 				message: "User created successfully.",
-				data: user,
 			})
 			.code(201);
 	} catch (error) {
@@ -80,79 +79,13 @@ const createUser = async (req, h) => {
 	}
 };
 
-// User login with email
-const userLogin = async (req, h) => {
-	try {
-		const { email, password } = req.payload;
-
-		const user = await prisma.user.findFirst({
-			where: {
-				email: email,
-				deleted_at: null,
-			},
-			select: {
-				id: true,
-				name: true,
-				email: true,
-				contact_no: true,
-				location: true,
-				password: true,
-				profile_image: true,
-				usercode: true,
-				is_active: true,
-				profile_remarks: true,
-				role: {
-					select: {
-						id: true,
-						role: true,
-					},
-				},
-				created_at: true,
-			},
-		});
-
-		if (!user) {
-			return h.response({ message: "User not found" }).code(404);
-		}
-
-		if (!user.is_active) {
-			return h
-				.response({
-					success: false,
-					message:
-						"User profile is not active or has been deleted. Please contact the administrator for assistance.",
-				})
-				.code(403);
-		}
-
-		const isMatch = await bcrypt.compare(password, user.password);
-		if (!isMatch) {
-			return h.response({ message: "Invalid password" }).code(400);
-		}
-
-		const token = jwt.sign({ email: user.email }, SECRET, {
-			expiresIn: "1d",
-		});
-
-		return h
-			.response({
-				message: "Logged in sucessfully.",
-				token: token,
-				data: user,
-			})
-			.code(200);
-	} catch (error) {
-		console.log(error);
-		return h.response({ message: "Error while login", error }).code(500);
-	}
-};
-
-// profile_image
-const me = async (req, h) => {
+// profile display
+const showUserProfile = async (req, h) => {
 	try {
 		const userId = req.userId;
+
 		if (!userId) {
-			return h.response({ message: "Unauthorized user" }).code(404);
+			return h.response({ message: "Unauthorized user" }).code(401);
 		}
 
 		const user = await prisma.user.findFirst({
@@ -165,7 +98,7 @@ const me = async (req, h) => {
 				email: true,
 				contact_no: true,
 				location: true,
-				password: true,
+				gender: true,
 				profile_image: true,
 				usercode: true,
 				is_active: true,
@@ -207,7 +140,18 @@ const me = async (req, h) => {
 const editMyProfile = async (req, h) => {
 	try {
 		const user = req.rootUser;
-		const { name, contact_no, location, profile_image } = req.payload;
+		const {
+			name,
+			contact_no,
+			street_address,
+			city,
+			state,
+			country,
+			pin_code,
+			landmark,
+			gender,
+			profile_image,
+		} = req.payload;
 
 		// Fetch existing user data
 		const existingUser = await prisma.user.findUnique({
@@ -222,8 +166,19 @@ const editMyProfile = async (req, h) => {
 		if (name && name === existingUser.name) checkSame.push("Name");
 		if (contact_no && contact_no === existingUser.contact_no)
 			checkSame.push("Contact number");
-		if (location && location === existingUser.location)
-			checkSame.push("Address");
+		const getMatchingLocationFields = (loc1, loc2) => {
+			if (!loc1 || !loc2) return;
+			if (loc1.street_address === loc2.street_address)
+				checkSame.push("Street Address");
+			if (loc1.city === loc2.city) checkSame.push("City");
+			if (loc1.state === loc2.state) checkSame.push("State");
+			if (loc1.country === loc2.country) checkSame.push("Country");
+			if (loc1.pin_code === loc2.pin_code) checkSame.push("Pin Code");
+			if (loc1.landmark === loc2.landmark) checkSame.push("Landmark");
+		};
+		getMatchingLocationFields(location, existingUser.location);
+		if (gender && gender === existingUser.gender) checkSame.push("Gender");
+
 		if (checkSame.length > 0) {
 			return h
 				.response({
@@ -263,17 +218,26 @@ const editMyProfile = async (req, h) => {
 			const fileStream = fs.createWriteStream(uploadPath);
 			profile_image.pipe(fileStream);
 		}
-
-		const updatedData = await prisma.user.update({
+		await prisma.user.update({
 			where: {
 				id: user.id,
 				deleted_at: null,
 			},
 			data: {
-				name,
-				contact_no,
-				location,
+				name: name ?? existingUser.name,
+				contact_no: contact_no ?? existingUser.contact_no,
+				location: {
+					street_address:
+						street_address ?? existingUser.location?.street_address,
+					city: city ?? existingUser.location?.city,
+					state: state ?? existingUser.location?.state,
+					country: country ?? existingUser.location?.country,
+					pin_code: pin_code ?? existingUser.location?.pin_code,
+					landmark: landmark ?? existingUser.location?.landmark,
+				},
+				gender: gender ?? existingUser.gender,
 				profile_image: uniqueFilename || existingUser.profile_image,
+				profile_remarks: "Profile information updated by the user.",
 			},
 		});
 
@@ -281,7 +245,6 @@ const editMyProfile = async (req, h) => {
 			.response({
 				success: true,
 				message: "Profile updated successfully.",
-				data: updatedData,
 			})
 			.code(200);
 	} catch (error) {
@@ -323,7 +286,7 @@ const changeUserPassword = async (req, h) => {
 
 		const hashedPassword = await bcrypt.hash(new_password, 10);
 
-		const updatedPassword = await prisma.user.update({
+		await prisma.user.update({
 			where: {
 				id: user.id,
 				is_active: true,
@@ -331,6 +294,7 @@ const changeUserPassword = async (req, h) => {
 			},
 			data: {
 				password: hashedPassword,
+				profile_remarks: "Profile password updated by the user.",
 			},
 		});
 
@@ -338,7 +302,6 @@ const changeUserPassword = async (req, h) => {
 			.response({
 				success: true,
 				message: "Password updated successfully.",
-				data: updatedPassword,
 			})
 			.code(200);
 	} catch (error) {
@@ -358,7 +321,7 @@ const profileDeletionByUser = async (req, h) => {
 		const user = req.rootUser;
 		const { reason } = req.payload;
 
-		const updatedUser = await prisma.user.update({
+		await prisma.user.update({
 			where: {
 				id: user.id,
 				is_active: true,
@@ -366,7 +329,7 @@ const profileDeletionByUser = async (req, h) => {
 			},
 			data: {
 				is_active: false,
-				profile_remarks: "Account deleted by user.",
+				profile_remarks: "Profile deleted by user.",
 				user_deletion_reason: reason,
 				deleted_at: new Date(),
 			},
@@ -376,7 +339,6 @@ const profileDeletionByUser = async (req, h) => {
 			.response({
 				success: true,
 				message: "User profile deleted successfully.",
-				data: updatedUser,
 			})
 			.code(200);
 	} catch (error) {
@@ -395,7 +357,7 @@ const profileDeletionByAdmin = async (req, h) => {
 	try {
 		const { userId, reason } = req.payload;
 
-		const updatedUser = await prisma.user.update({
+		await prisma.user.update({
 			where: {
 				id: userId,
 				is_active: true,
@@ -413,7 +375,6 @@ const profileDeletionByAdmin = async (req, h) => {
 			.response({
 				success: true,
 				message: "User profile deleted successfully.",
-				data: updatedUser,
 			})
 			.code(200);
 	} catch (error) {
@@ -429,8 +390,7 @@ const profileDeletionByAdmin = async (req, h) => {
 
 module.exports = {
 	createUser,
-	userLogin,
-	me,
+	showUserProfile,
 	editMyProfile,
 	changeUserPassword,
 	profileDeletionByUser,
