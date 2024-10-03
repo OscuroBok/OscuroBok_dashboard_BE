@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 
 const adminSeeder = async (req, h) => {
     try {
-        const email = "admin@123.com"
+        const email = "ashis.econstra@gmail.com"
         const password = "password"
         const roleExists = await prisma.role.findFirst({
             where: {
@@ -30,7 +30,7 @@ const adminSeeder = async (req, h) => {
                     name: "Super_Admin",
                     email: email,
                     password: await bcrypt.hash(password, 10),
-                    contact_no: "1234567890",
+                    contact_no: "7003957953",
                     role_id: roleExists.id,
                 }
             });

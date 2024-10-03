@@ -27,6 +27,19 @@ model Admin {
   @@map("admins")
 }
 
+model Verification {
+  id          Int      @id @default(autoincrement())
+  email       String
+  otp         String
+  isVerified  Boolean  @default(false)
+  otp_expired Boolean?
+
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+
+  @@map("verifications")
+}
+
 model User {
   id                    Int     @id @default(autoincrement())
   name                  String

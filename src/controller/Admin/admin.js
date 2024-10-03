@@ -6,6 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 const { ROLES } = require("../../utills/constant");
+const { tarnsporter } = require("../../helper");
 
 const adminLogin = async (req, h) => {
     try {
@@ -227,10 +228,110 @@ const updateRestaurantsStatus = async (req, h) => {
     }
 }
 
+//  forget password (sent otp)
+const sentOtpForForgetpassword = async (req, h) => {
+    try {
+        const { email } = req.payload;
+        const OTP = Math.floor(100000 + Math.random() * 900000).toString();
+
+        const adminExists = await prisma.admin.findFirst({
+            where: {
+                email: email,
+                deleted_at: null,
+            }
+        });
+        if (!adminExists) {
+            return h.response({ message: `Admin not found with ${email} mail id` }).code(404);
+        }
+
+        const createOTP = await prisma.verification.create({
+            data: {
+                email: email,
+                otp: OTP,
+            }
+        });
+
+        setTimeout(async () => {
+            await prisma.verification.update({
+                where: {
+                    id: createOTP.id,
+                },
+                data: {
+                    otp_expired: true,
+                }
+            });
+            console.log(`OTP for ${email} has expired.`);
+        }, 120000);  // => 2min
+
+        const mailOptions = {
+            from: process.env.EMAIL,
+            to: email,
+            subject: "Sending Eamil For Otp VERIFICATION",
+            text: `Use this OTP for verification :- ${OTP}`
+        };
+
+        tarnsporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log("error", error);
+                h.response({ message: "Email not sent" }).code(400);
+            } else {
+                console.log("Email sent", info.response);
+                h.response.json({ message: "Email sent Successfully" });
+            }
+        });
+
+        return h.response({ message: "OTP created successfully.This otp is valid up to 2 minute", data: createOTP }).code(201);
+
+    } catch (error) {
+        console.log(error);
+        return h.response({ message: "Error while sending OTP for forgot password", error }).code(500);
+    }
+}
+
+//  forget password (verify otp)
+const verifyOTP = async (req, h) => {
+    try {
+        const { email, otp } = req.payload;
+        const existingEmail = await prisma.verification.findFirst({
+            where: {
+                email,
+            }
+        });
+        // console.log(existingEmail);
+
+        if (!existingEmail) {
+            return h.response({ message: `Otp has not generated for ${email}.` }).code(400).takeover();
+        }
+
+        if (existingEmail.otp !== otp) {
+            return h.response({ message: "You have entered a wrong OTP" }).code(400).takeover();
+        }
+
+        if (existingEmail.otp_expired === true) {
+            return h.response({ message: "Otp has expired. Please generate new OTP." }).code(400).takeover();
+        }
+
+        const verified = await prisma.verification.update({
+            where: {
+                id: existingEmail.id,
+            },
+            data: {
+                otp_expired: true,
+            }
+        });
+        return h.response({ message: "OTP verified successfully", data: verified }).code(200);
+    } catch (error) {
+        console.log(error);
+        return h.response({ message: "Error while verifying OTP", error }).code(500);
+    }
+}
+
 module.exports = {
     adminLogin,
     fetchAllRestaurant,
     fetchInActiveRestaurants,
     restaurantCounter,
+    sentOtpForForgetpassword,
+    verifyOTP,
 
 }
