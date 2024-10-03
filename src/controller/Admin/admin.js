@@ -244,43 +244,96 @@ const sentOtpForForgetpassword = async (req, h) => {
             return h.response({ message: `Admin not found with ${email} mail id` }).code(404);
         }
 
-        const createOTP = await prisma.verification.create({
-            data: {
+        const verificationExists = await prisma.verification.findFirst({
+            where: {
                 email: email,
-                otp: OTP,
             }
         });
 
-        setTimeout(async () => {
-            await prisma.verification.update({
+        if (verificationExists) {
+            const updateOTP = await prisma.verification.update({
                 where: {
-                    id: createOTP.id,
+                    id: verificationExists.id,
                 },
                 data: {
-                    otp_expired: true,
+                    otp: OTP,
+                    isVerified: false,
+                    otp_expired: false,
                 }
             });
-            console.log(`OTP for ${email} has expired.`);
-        }, 120000);  // => 2min
 
-        const mailOptions = {
-            from: process.env.EMAIL,
-            to: email,
-            subject: "Sending Eamil For Otp VERIFICATION",
-            text: `Use this OTP for verification :- ${OTP}`
-        };
+            setTimeout(async () => {
+                await prisma.verification.update({
+                    where: {
+                        id: updateOTP.id,
+                    },
+                    data: {
+                        otp_expired: true,
+                    }
+                });
+                console.log(`OTP for ${email} has expired.`);
+            }, 120000);  // => 2min
 
-        tarnsporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.log("error", error);
-                h.response({ message: "Email not sent" }).code(400);
-            } else {
-                console.log("Email sent", info.response);
-                h.response.json({ message: "Email sent Successfully" });
-            }
-        });
+            const mailOptions = {
+                from: process.env.EMAIL,
+                to: email,
+                subject: "Sending Eamil For Otp VERIFICATION",
+                text: `Use this OTP for verification :- ${OTP}`
+            };
 
-        return h.response({ message: "OTP created successfully.This otp is valid up to 2 minute", data: createOTP }).code(201);
+            tarnsporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.log("error", error);
+                    h.response({ message: "Email not sent" }).code(400);
+                } else {
+                    console.log("Email sent", info.response);
+                    h.response.json({ message: "Email sent Successfully" });
+                }
+            });
+
+            return h.response({ message: "OTP created successfully.This otp is valid up to 2 minute", data: updateOTP }).code(201);
+        } else {
+            const createOTP = await prisma.verification.create({
+                data: {
+                    email: email,
+                    otp: OTP,
+                    isVerified: false,
+                    otp_expired: false,
+                }
+            });
+
+            setTimeout(async () => {
+                await prisma.verification.update({
+                    where: {
+                        id: createOTP.id,
+                    },
+                    data: {
+                        otp_expired: true,
+                    }
+                });
+                console.log(`OTP for ${email} has expired.`);
+            }, 120000);  // => 2min
+
+            const mailOptions = {
+                from: process.env.EMAIL,
+                to: email,
+                subject: "Sending Eamil For Otp VERIFICATION",
+                text: `Use this OTP for verification :- ${OTP}`
+            };
+
+            tarnsporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.log("error", error);
+                    h.response({ message: "Email not sent" }).code(400);
+                } else {
+                    console.log("Email sent", info.response);
+                    h.response.json({ message: "Email sent Successfully" });
+                }
+            });
+
+            return h.response({ message: "OTP created successfully.This otp is valid up to 2 minute", data: createOTP }).code(201);
+        }
+
 
     } catch (error) {
         console.log(error);
@@ -297,7 +350,6 @@ const verifyOTP = async (req, h) => {
                 email,
             }
         });
-        // console.log(existingEmail);
 
         if (!existingEmail) {
             return h.response({ message: `Otp has not generated for ${email}.` }).code(400).takeover();
@@ -316,9 +368,23 @@ const verifyOTP = async (req, h) => {
                 id: existingEmail.id,
             },
             data: {
-                otp_expired: true,
+                isVerified: true,
             }
         });
+
+        setTimeout(async () => {
+            await prisma.verification.update({
+                where: {
+                    id: verified.id,
+                },
+                data: {
+                    otp_expired: true,
+                    isVerified: false,
+                }
+            });
+            console.log(`OTP for ${email} has expired.`);
+        }, 120000);  // => 2min
+
         return h.response({ message: "OTP verified successfully", data: verified }).code(200);
     } catch (error) {
         console.log(error);

@@ -1,6 +1,6 @@
 const { adminAuth } = require("../config/auth");
 const controller = require("../controller/Admin/admin");
-const { adminLoginValidation, getAllRestaurantsValidation } = require("../validations/admin");
+const { adminLoginValidation, getAllRestaurantsValidation, adminSentOtpValidation, adminVerifyOtpValidation } = require("../validations/admin");
 
 module.exports = [
     // login with email
@@ -98,5 +98,62 @@ module.exports = [
             pre: [adminAuth],
             description: "Counter Api For All restaurants",
         }
+    },
+
+
+    // sent otp for forget password
+    {
+        method: "POST",
+        path: "/admin/forget-password/sent-otp",
+        options: {
+            tags: ["api", "Admin"],
+            handler: controller.sentOtpForForgetpassword,
+            description: "Sent OTP For Forget Password (Admin)",
+            validate: {
+                ...adminSentOtpValidation,
+                failAction: (request, h, err) => {
+                    const customErrorMessages = err.details.map(
+                        (detail) => detail.message
+                    );
+                    return h
+                        .response({
+                            statusCode: 400,
+                            error: "Bad Request",
+                            message: customErrorMessages,
+                        })
+                        .code(400)
+                        .takeover();
+                },
+            },
+
+        },
+    },
+
+    // verify otp for forget password
+    {
+        method: "POST",
+        path: "/admin/forget-password/verify-otp",
+        options: {
+            tags: ["api", "Admin"],
+            handler: controller.verifyOTP,
+            description: "Verify OTP For Forget Password (Admin)",
+            validate: {
+                ...adminVerifyOtpValidation,
+                failAction: (request, h, err) => {
+                    const customErrorMessages = err.details.map(
+                        (detail) => detail.message
+                    );
+                    return h
+                        .response({
+                            statusCode: 400,
+                            error: "Bad Request",
+                            message: customErrorMessages,
+                        })
+                        .code(400)
+                        .takeover();
+                },
+            },
+
+        },
     },
 ]

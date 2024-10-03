@@ -18,8 +18,24 @@ const getAllRestaurantsValidation = {
 }
 
 
+// sent-otp
+const adminSentOtpValidation = {
+    payload: Joi.object({
+        email: Joi.string().required().label('email'),
+    })
+};
+
+// verify otp
+const adminVerifyOtpValidation = {
+    payload: Joi.object({
+        email: Joi.string().required().label('email'),
+        otp: Joi.string().required().label('otp'),
+    })
+};
+
 module.exports = {
     adminLoginValidation,
     getAllRestaurantsValidation,
-
+    adminSentOtpValidation,
+    adminVerifyOtpValidation,
 }
