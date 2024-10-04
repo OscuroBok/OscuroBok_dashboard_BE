@@ -388,6 +388,196 @@ const profileDeletionByAdmin = async (req, h) => {
 	}
 };
 
+// follow restaurant profile
+const followRestaurantprofile = async (req, h) => {
+	try {
+		const userId = req.userId;
+		if (!userId) {
+			return h
+				.response({
+					success: false,
+					message: "User not authenticated.",
+				})
+				.code(401);
+		}
+
+		const { restaurantId } = req.payload;
+		if (!restaurantId) {
+			return h
+				.response({
+					success: false,
+					message: "Restaurant ID is required.",
+				})
+				.code(400);
+		}
+
+		const existingFollow = await prisma.follower.findFirst({
+			where: {
+				user_id: userId,
+				restaurant_id: restaurantId,
+				isFollow: true,
+			},
+		});
+
+		if (existingFollow) {
+			return h
+				.response({
+					success: false,
+					message: "You are already following this restaurant.",
+				})
+				.code(400);
+		}
+
+		await prisma.follower.create({
+			data: {
+				user_id: userId,
+				restaurant_id: restaurantId,
+			},
+		});
+
+		return h
+			.response({
+				success: true,
+				message: "Restaurant followed successfully.",
+			})
+			.code(200);
+	} catch (error) {
+		console.log(error);
+		return h
+			.response({ message: "Error in following restaurant.", error })
+			.code(500);
+	}
+};
+
+// un-follow restaurant profile
+const unfollowRestaurantProfile = async (req, h) => {
+	try {
+		const userId = req.userId;
+		if (!userId) {
+			return h
+				.response({
+					success: false,
+					message: "User not authenticated.",
+				})
+				.code(401);
+		}
+
+		const { restaurantId, unfollowedReason } = req.payload;
+		if (!restaurantId) {
+			return h
+				.response({
+					success: false,
+					message: "Restaurant ID is required.",
+				})
+				.code(400);
+		}
+
+		const followRecord = await prisma.follower.findFirst({
+			where: {
+				user_id: userId,
+				restaurant_id: restaurantId,
+				isFollow: true,
+				deleted_at: null,
+			},
+		});
+
+		if (!followRecord) {
+			return h
+				.response({
+					success: false,
+					message: "You are not following this restaurant.",
+				})
+				.code(400);
+		}
+
+		await prisma.follower.update({
+			where: {
+				id: followRecord.id,
+			},
+			data: {
+				isFollow: false,
+				unfollowedReason: unfollowedReason || "No reason provided",
+				deleted_at: new Date(),
+			},
+		});
+
+		return h
+			.response({
+				success: true,
+				message: "Restaurant unfollowed successfully.",
+			})
+			.code(200);
+	} catch (error) {
+		console.error("Error in unfollowing restaurant:", error);
+		return h
+			.response({
+				success: false,
+				message: "Error in unfollowing restaurant.",
+				error,
+			})
+			.code(500);
+	}
+};
+
+// get all followed restaurant profiles
+const showFollowedRestaurants = async (req, h) => {
+	try {
+		const userId = req.userId;
+		if (!userId) {
+			return h
+				.response({
+					success: false,
+					message: "User not authenticated.",
+				})
+				.code(401);
+		}
+
+		const followedRestaurants = await prisma.follower.findMany({
+			where: {
+				user_id: userId,
+				isFollow: true,
+				deleted_at: null,
+			},
+			select: {
+				id: true,
+				Restaurant: {
+					select: {
+						id: true,
+						restaurant_name: true,
+						logo: true,
+					},
+				},
+			},
+		});
+
+		if (followedRestaurants.length === 0) {
+			return h
+				.response({
+					success: true,
+					message: "You are not following any restaurants.",
+				})
+				.code(200);
+		}
+
+		return h
+			.response({
+				success: true,
+				message: "Followed restaurants fetched successfully.",
+				data: followedRestaurants,
+			})
+			.code(200);
+	} catch (error) {
+		console.error("Error fetching followed restaurants:", error);
+		return h
+			.response({
+				success: false,
+				message: "Error fetching followed restaurants.",
+				error,
+			})
+			.code(500);
+	}
+};
+
 module.exports = {
 	createUser,
 	showUserProfile,
@@ -395,4 +585,7 @@ module.exports = {
 	changeUserPassword,
 	profileDeletionByUser,
 	profileDeletionByAdmin,
+	followRestaurantprofile,
+	unfollowRestaurantProfile,
+	showFollowedRestaurants,
 };
