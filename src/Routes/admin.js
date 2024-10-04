@@ -1,6 +1,6 @@
 const { adminAuth } = require("../config/auth");
 const controller = require("../controller/Admin/admin");
-const { adminLoginValidation, getAllRestaurantsValidation, adminSentOtpValidation, adminVerifyOtpValidation } = require("../validations/admin");
+const { adminLoginValidation, getAllRestaurantsValidation, adminSentOtpValidation, adminVerifyOtpValidation, adminResetPasswordValidation } = require("../validations/admin");
 
 module.exports = [
     // login with email
@@ -156,4 +156,30 @@ module.exports = [
 
         },
     },
+    // reset password for forget password
+    {
+        method: "POST",
+        path: "/admin/forget-password/reset-password",
+        options: {
+            tags: ["api", "Admin"],
+            handler: controller.resetPasswordAfterVerification,
+            description: "Reset Password For Forget Password (Admin)",
+            validate: {
+                ...adminResetPasswordValidation,
+                failAction: (request, h, err) => {
+                    const customErrorMessages = err.details.map(
+                        (detail) => detail.message
+                    );
+                    return h
+                        .response({
+                            statusCode: 400,
+                            error: "Bad Request",
+                            message: customErrorMessages,
+                        })
+                        .code(400)
+                        .takeover();
+                },
+            },
+        }
+    }
 ]

@@ -392,6 +392,44 @@ const verifyOTP = async (req, h) => {
     }
 }
 
+// change password after verification
+const resetPasswordAfterVerification = async (req, h) => {
+    try {
+        const { email, newPassword } = req.payload;
+        const existingEmail = await prisma.verification.findFirst({
+            where: {
+                email,
+            }
+        });
+
+        if (!existingEmail) {
+            return h.response({ message: `Otp has not generated for ${email}.` }).code(400).takeover();
+        }
+        if (existingEmail.otp_expired === true) {
+            return h.response({ message: "Otp has expired. Please generate new OTP." }).code(400).takeover();
+        }
+        if (existingEmail.isVerified === false) {
+            return h.response({ message: "Otp has not been verified. Please verify the OTP." }).code(400).takeover();
+        }
+        if (existingEmail.otp_expired === true) {
+            return h.response({ message: "OTP has expired. Please generate a new OTP." }).code(400).takeover();
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const updatedAdmin = await prisma.admin.update({
+            where: {
+                email: email,
+            },
+            data: {
+                password: hashedPassword,
+            }
+        });
+        return h.response({ message: "Password reset successfully", data: updatedAdmin }).code(200);
+    } catch (error) {
+        console.log(error);
+        return h.response({ message: "Error while changing password", error }).code(500);
+    }
+}
 module.exports = {
     adminLogin,
     fetchAllRestaurant,
@@ -399,5 +437,6 @@ module.exports = {
     restaurantCounter,
     sentOtpForForgetpassword,
     verifyOTP,
+    resetPasswordAfterVerification,
 
 }

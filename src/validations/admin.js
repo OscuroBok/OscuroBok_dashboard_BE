@@ -33,9 +33,18 @@ const adminVerifyOtpValidation = {
     })
 };
 
+const adminResetPasswordValidation = {
+    payload: Joi.object({
+        email: Joi.string().required().label('email'),
+        newPassword: Joi.string().required().label('new_password'),
+    })
+};
+
 module.exports = {
     adminLoginValidation,
     getAllRestaurantsValidation,
     adminSentOtpValidation,
     adminVerifyOtpValidation,
+    adminResetPasswordValidation,
+
 }
