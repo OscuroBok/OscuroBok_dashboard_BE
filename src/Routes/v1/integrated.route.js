@@ -1,5 +1,5 @@
-const controller = require("../controller/integrated.controller");
-const { userVendorLoginValidation } = require("../validations/integrated.validation");
+const controller = require("../../controller/integrated.controller");
+const { userVendorLoginValidation } = require("../../validations/integrated.validation");
 
 module.exports = [
 	// user and vendor login
