@@ -1,37 +1,38 @@
 {
-  "name": "hapi_swagger",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js",
-    "db:migrate": "prisma migrate dev --name",
-    "db:migrate_all": "prisma migrate dev --skip-generate --skip-seed",
-    "seed:role": "node ./src/seeder/role-seeder.js",
-    "seed:restaurant": "node ./src/seeder/restaurant.seeder.js"
-  },
-  "prisma": {
-    "seed": "node ./src/seeder/role-seeder.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@hapi/hapi": "^21.3.2",
-    "@hapi/inert": "^7.1.0",
-    "@hapi/vision": "^7.0.3",
-    "@prisma/client": "^5.20.0",
-    "bcrypt": "^5.1.1",
-    "hapi-swagger": "^17.2.0",
-    "joi": "^17.11.0",
-    "jsonwebtoken": "^9.0.2",
-    "mysql2": "^3.6.5",
-    "nodemon": "^3.1.4",
-    "package": "^1.0.1",
-    "uuid": "^10.0.0"
-  },
-  "devDependencies": {
-    "prisma": "^5.20.0"
-  }
+	"name": "hapi_swagger",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "nodemon server.js",
+		"db:migrate": "prisma migrate dev --name",
+		"db:migrate_all": "prisma migrate dev --skip-generate --skip-seed",
+		"seed:role": "node -e \"require('./src/seeder/role-seeder').seedRoles()\"",
+		"seed:restaurant": "node -e \"require('./src/seeder/main.seeder.js').seedRestaurantProfile()\"",
+		"seed:all": "node -e \"require('./src/seeder/main.seeder.js').seedAll()\""
+	},
+	"prisma": {
+		"seed": "node ./src/seeder/role-seeder.js"
+	},
+	"keywords": [],
+	"author": "OscuroBok",
+	"license": "ISC",
+	"dependencies": {
+		"@hapi/hapi": "^21.3.2",
+		"@hapi/inert": "^7.1.0",
+		"@hapi/vision": "^7.0.3",
+		"@prisma/client": "^5.20.0",
+		"bcrypt": "^5.1.1",
+		"hapi-swagger": "^17.2.0",
+		"joi": "^17.11.0",
+		"jsonwebtoken": "^9.0.2",
+		"mysql2": "^3.6.5",
+		"nodemon": "^3.1.4",
+		"package": "^1.0.1",
+		"uuid": "^10.0.0"
+	},
+	"devDependencies": {
+		"prisma": "^5.20.0"
+	}
 }

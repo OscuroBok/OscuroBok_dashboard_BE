@@ -1,3 +1,13 @@
+/* 
+The restaurantSeeder function creates a new restaurant profile in the database. 
+It checks if the RESTAURANT_OWNER role exists and verifies if the restaurant is 
+already registered with the given profile details. If the restaurant doesn't 
+exist, it generates a unique restaurant_code and within a transaction, creates 
+both a user and a corresponding restaurant profile in the database. Any errors 
+during the process are logged and the function ends by disconnecting the Prisma 
+client.
+*/
+
 const prisma = require("../config/DbConfig");
 const { ROLES } = require("../utills/constant");
 const bcrypt = require("bcrypt");
@@ -52,27 +62,20 @@ const restaurantSeeder = async (req, h) => {
 					restaurant_code,
 					owner_name: name,
 					contact_no,
-					email: email,
+					email,
 					password: hashedPassword,
+					geo_location,
 					user_id: user.id,
 				},
 			});
 		});
-		console.log("Restaurant Profile seeded successfully.");
+		console.log("Restaurant Profile added in database.");
 	} catch (error) {
 		console.error("Error while seeding restaurant profile: ", error);
+		process.exit(1);
+	} finally {
+		await prisma.$disconnect();
 	}
 };
 
-restaurantSeeder()
-	.catch((e) => {
-		console.log(e);
-		process.exit(1);
-	})
-	.finally(() => {
-		prisma.$disconnect();
-	});
-
-module.exports = {
-	restaurantSeeder,
-};
+module.exports = restaurantSeeder;
