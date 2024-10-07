@@ -45,6 +45,51 @@ const Authentication = async (req, h) => {
     }
 };
 
+const adminAuth = async (req, h) => {
+    try {
+        const token = req.headers.authorization;
+        // console.log("token : ", token);
+        if (!token) {
+            return h
+                .response({ status: 400, message: "No token provided" })
+                .takeover();
+        } else {
+            const verifytoken = jwt.verify(token, SECRET);
+            // console.log("Token verification : ", verifytoken)
+            const rootUser = await prisma.admin.findFirst({
+                where: {
+                    email: verifytoken.email,
+                },
+                include: {
+                    role: {
+                        select: {
+                            id: true,
+                            role: true,
+                        },
+                    },
+                },
+            });
+            // console.log("Root_User", rootUser);
+            if (!rootUser) {
+                h.response({ message: "Admin not found" }).code(404).takeover();
+            }
+
+            // console.log(token, rootUser);
+
+            req.token = token;
+            req.rootAdmin = rootUser;
+            req.adminId = rootUser.id;
+
+            return req;
+        }
+    } catch (error) {
+        console.log(error);
+        return h.response({ message: "Error while verifying admin token", error }).code(500);
+    }
+}
+
 module.exports = {
     Authentication,
+    adminAuth,
+
 };

@@ -29,7 +29,7 @@ const adminLogin = async (req, h) => {
 
 
         if (!admin) {
-            h.response({ message: "Admin not found" }).code(404);
+            return h.response({ message: "Admin not found" }).code(404);
         }
 
         const isMatch = await bcrypt.compare(password, admin.password);
