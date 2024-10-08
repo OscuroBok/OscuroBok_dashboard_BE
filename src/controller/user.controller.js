@@ -388,6 +388,7 @@ const profileDeletionByAdmin = async (req, h) => {
 	}
 };
 
+// forget password api
 module.exports = {
 	createUser,
 	showUserProfile,
