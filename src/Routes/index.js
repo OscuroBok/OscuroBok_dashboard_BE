@@ -9,7 +9,6 @@ module.exports = {
 	register: (server, options) => {
 		server.route(user);
 		server.route(restaurant);
-		server.route(integrated);
-		server.route(admin)
+		server.route(admin);
 	},
 };
