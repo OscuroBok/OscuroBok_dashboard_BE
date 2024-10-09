@@ -11,7 +11,6 @@ module.exports = [
             tags: ["api", "Admin"],
             handler: controller.adminLogin,
             description: "Admin Login",
-            // pre: [adminAuth],
             validate: {
                 ...adminLoginValidation,
                 failAction: (request, h, err) => {
