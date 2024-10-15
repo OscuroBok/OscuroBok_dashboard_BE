@@ -15,19 +15,8 @@ Welcome to the OscuroBok Frontend Codebase! This README provides a comprehensive
 
 ---
 
-## Key Features
-
-### Email-to-OTP Workflow
-- Users enter their email, triggering an OTP form. The OTP is verified against the backend to initiate a password reset.
-
 ### Role-Based Routing
 - Based on the user type (Admin/User), redirection occurs after login using a single API call.
-
-### Smooth Transitions
-- Components like email and OTP forms have smooth UI transitions for better user experience.
-
-### Form Validation & Feedback
-- Uses Formik to handle form state, and validation provides real-time feedback. Alerts are shown using `react-toastify`.
 
 ### Workflow Diagram
 
@@ -38,13 +27,6 @@ graph TD
     C -->|Yes| D[Proceed to Reset Password]
     C -->|No| E[Error: Invalid OTP]
 ```
-
-AuthForgotPassword Component
-- Located in app/pages/auth/forgotPassword.tsx
-- Handles email input and OTP verification using the useFormik hook for state management.
-
- State Management
-- The Redux store manages global authentication and user data. Key actions include login, verifyOtp, and fetchUserData
 
 ### Project Flow
 
@@ -62,6 +44,9 @@ graph TD
     
 # To clone a code from a particular branch, use:
 * git clone -b branch_name https://github.com/OscuroBok/OscuroBok_dashboard_FE.git
+
+* # To clone a code from a branch, use:
+* git clone https://github.com/OscuroBok/OscuroBok_dashboard_FE.git
 
 # Commands used:
 * npm install
