@@ -9,4 +9,5 @@
 * npm install
 * npm run db:migrate_all ->  Migrates all Schemas and creates tables in Database
 * npm run seed:role (if u don't see the message, "The seed command has been executed") -> This command will insert the Admins roles into DB
+* npm run seed:admin(Inserts the Super Admin credentials and data in DB)
 * npm start
