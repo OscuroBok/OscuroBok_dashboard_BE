@@ -8,7 +8,7 @@ const Pack = require("./package");
 const baseRouter = require("./src/Routes");
 
 const server = Hapi.server({
-    port: process.env.PORT || 5500,
+    port: process.env.PORT || 4500,
     host: process.env.HOST || "localhost",
     routes: {
         cors: {
