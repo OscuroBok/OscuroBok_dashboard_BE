@@ -1,6 +1,9 @@
-# OscuroBok Frontend Codebase
+# OscuroBok Backend Codebase
 
-Welcome to the OscuroBok Frontend Codebase! This README provides a comprehensive yet simple guide for new contributors to understand the key components and flow of this Next.js project. The codebase primarily focuses on user authentication, OTP verification, and role-based access, using various modern technologies like React, Redux, MUI, Formik, and more.
+Welcome to the OscuroBok Backend Codebase! This README provides a comprehensive yet simple guide for new contributors to understand the key components and flow of this project. The codebase primarily focuses on user 
+- Authentication, 
+- OTP verification,
+- Role-based access
 
 ## Tech Stack
 
