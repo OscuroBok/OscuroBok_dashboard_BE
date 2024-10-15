@@ -10,6 +10,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Admin {
+  id         Int     @id @default(autoincrement())
+  name       String
+  email      String  @unique
+  password   String
+  contact_no String?
+
+  role    Role @relation(fields: [role_id], references: [id])
+  role_id Int
+
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+  deleted_at DateTime?
+
+  @@map("admins")
+}
+
+model Verification {
+  id          Int      @id @default(autoincrement())
+  email       String
+  otp         String
+  isVerified  Boolean  @default(false)
+  otp_expired Boolean?
+
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+
+  @@map("verifications")
+}
+
 model User {
   id                    Int     @id @default(autoincrement())
   name                  String
@@ -42,6 +72,7 @@ model Role {
   created_at DateTime  @default(now())
   deleted_at DateTime?
   User       User[]
+  Admin      Admin[]
 
   @@map("roles")
 }
