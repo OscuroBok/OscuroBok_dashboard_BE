@@ -8,18 +8,18 @@ const Pack = require("./package");
 const baseRouterV1 = require("./src/Routes");
 
 const server = Hapi.server({
-	port: process.env.PORT || 5500,
-	host: process.env.HOST || "localhost",
-	routes: {
-		cors: {
-			origin: ["*"], // Allow all origins
-			headers: ["Authorization", "Content-Type", "If-None-Match"], // Define allowed headers
-			exposedHeaders: ["WWW-Authenticate", "Server-Authorization"],
-			additionalExposedHeaders: ["X-Custom-Header"],
-			maxAge: 60,
-			credentials: true, // Allow credentials (cookies, authorization headers, etc.)
-		},
-	},
+    port: process.env.PORT || 4500,
+    host: process.env.HOST || "localhost",
+    routes: {
+        cors: {
+            origin: ['*'], // Allow all origins
+            headers: ['Authorization', 'Content-Type', 'If-None-Match'], // Define allowed headers
+            exposedHeaders: ['WWW-Authenticate', 'Server-Authorization'],
+            additionalExposedHeaders: ['X-Custom-Header'],
+            maxAge: 60,
+            credentials: true // Allow credentials (cookies, authorization headers, etc.)
+        },
+    },
 });
 
 const init = async () => {

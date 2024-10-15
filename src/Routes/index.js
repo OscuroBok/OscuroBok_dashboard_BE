@@ -6,6 +6,7 @@
 
 const user = require("./v1/user.route");
 const restaurant = require("./v1/restaurant.route");
+const admin = require("./admin");
 const integrated = require("./v1/integrated.route");
 
 module.exports = {
@@ -14,6 +15,7 @@ module.exports = {
 	register: (server, options) => {
 		server.route(user);
 		server.route(restaurant);
+		server.route(admin);
 		server.route(integrated);
 	},
 };

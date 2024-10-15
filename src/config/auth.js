@@ -3,48 +3,93 @@ const prisma = require("../config/DbConfig");
 const SECRET = process.env.SECRET;
 
 const Authentication = async (req, h) => {
-	try {
-		const token = req.headers.authorization;
-		// console.log(token);
-		if (!token) {
-			return h
-				.response({ status: 400, message: "No token provided" })
-				.takeover();
-		} else {
-			const verifytoken = jwt.verify(token, SECRET);
-			// console.log("Token verification : ", verifytoken)
-			const rootUser = await prisma.user.findFirst({
-				where: {
-					email: verifytoken.email,
-				},
-				include: {
-					role: {
-						select: {
-							id: true,
-							role: true,
-						},
-					},
-				},
-			});
-			// console.log("Root_User", rootUser);
-			if (!rootUser) {
-				h.response({ message: "User not found" }).code(404).takeover();
-			}
+    try {
+        const token = req.headers.authorization;
+        // console.log(token);
+        if (!token) {
+            return h
+                .response({ status: 400, message: "No token provided" })
+                .takeover();
+        } else {
+            const verifytoken = jwt.verify(token, SECRET);
+            // console.log("Token verification : ", verifytoken)
+            const rootUser = await prisma.user.findFirst({
+                where: {
+                    email: verifytoken.email,
+                },
+                include: {
+                    role: {
+                        select: {
+                            id: true,
+                            role: true,
+                        },
+                    },
+                },
+            });
+            // console.log("Root_User", rootUser);
+            if (!rootUser) {
+                h.response({ message: "User not found" }).code(404).takeover();
+            }
 
-			// console.log(token, rootUser);
+            // console.log(token, rootUser);
 
-			req.token = token;
-			req.rootUser = rootUser;
-			req.userId = rootUser.id;
+            req.token = token;
+            req.rootUser = rootUser;
+            req.userId = rootUser.id;
 
-			return req;
-		}
-	} catch (error) {
-		logger.error("Authentication error:", error);
-		return h.response({ message: "Unauthorized User!", error }).code(400);
-	}
+            return req;
+        }
+    } catch (error) {
+        logger.error("Authentication error:", error);
+        return h.response({ message: "Unauthorized User!", error }).code(400);
+    }
 };
 
+const adminAuth = async (req, h) => {
+    try {
+        const token = req.headers.authorization;
+        // console.log("token : ", token);
+        if (!token) {
+            return h
+                .response({ status: 400, message: "No token provided" })
+                .takeover();
+        } else {
+            const verifytoken = jwt.verify(token, SECRET);
+            // console.log("Token verification : ", verifytoken)
+            const rootUser = await prisma.admin.findFirst({
+                where: {
+                    email: verifytoken.email,
+                },
+                include: {
+                    role: {
+                        select: {
+                            id: true,
+                            role: true,
+                        },
+                    },
+                },
+            });
+            // console.log("Root_User", rootUser);
+            if (!rootUser) {
+                h.response({ message: "Admin not found" }).code(404).takeover();
+            }
+
+            // console.log(token, rootUser);
+
+            req.token = token;
+            req.rootAdmin = rootUser;
+            req.adminId = rootUser.id;
+
+            return req;
+        }
+    } catch (error) {
+        console.log(error);
+        return h.response({ message: "Error while verifying admin token", error }).code(500);
+    }
+}
+
 module.exports = {
-	Authentication,
+    Authentication,
+    adminAuth,
+
 };
