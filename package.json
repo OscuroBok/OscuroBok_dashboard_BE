@@ -10,6 +10,7 @@
     "db:migrate": "prisma migrate dev --name",
     "db:migrate_all": "prisma migrate dev --skip-generate --skip-seed",
     "seed:role": "node ./src/seeder/role.seeder.js",
+    "seed:user": "node -e \"require('./src/seeder/main.seeder.js').seedUserProfile()\"",
     "seed:restaurant": "node -e \"require('./src/seeder/main.seeder.js').seedRestaurantProfile()\"",
     "seed:admin": "node -e \"require('./src/seeder/main.seeder.js').seedAdminProfile()\"",
     "seed:all": "node -e \"require('./src/seeder/main.seeder.js').seedAll()\""

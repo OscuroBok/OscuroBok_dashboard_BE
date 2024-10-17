@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = env("DEPLOYED_DATABASE_URL")
 }
 
 model Admin {
@@ -80,9 +80,9 @@ model Role {
 
 model Restaurant {
   id                              Int       @id @default(autoincrement())
-  restaurant_name                 String?
+  restaurant_name                 String
   restaurant_code                 String
-  owner_name                      String
+  owner_name                      String?
   contact_no                      String    @unique
   whatsapp_no                     String?
   email                           String    @unique
