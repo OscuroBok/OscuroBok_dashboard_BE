@@ -82,8 +82,8 @@ const restaurantAdminRegistration = async (req, h) => {
 				const restaurant_code = `RST${uuidv4().substring(0, 6)}`;
 				await prisma.restaurant.create({
 					data: {
+						restaurant_name: name,
 						restaurant_code,
-						owner_name: name,
 						contact_no,
 						email,
 						password: hashedPassword,
@@ -593,79 +593,115 @@ const restaurantProfileUpdate = async (req, h) => {
 			),
 		]);
 
-		await prisma.restaurant.update({
-			where: {
-				id: restaurant.id,
-				deleted_at: null,
-			},
-			data: {
-				restaurant_name:
-					restaurant_name ?? existingRestaurant.restaurant_name,
-				owner_name: owner_name ?? existingRestaurant.owner_name,
-				contact_no: contact_no ?? existingRestaurant.contact_no,
-				address: {
-					street_address:
-						street_address ??
-						existingRestaurant.address?.street_address,
-					city: city ?? existingRestaurant.address?.city,
-					state: state ?? existingRestaurant.address?.state,
-					country: country ?? existingRestaurant.address?.country,
-					pin_code: pin_code ?? existingRestaurant.address?.pin_code,
-					landmark: landmark ?? existingRestaurant.address?.landmark,
+		await prisma.$transaction(async (prisma) => {
+			await prisma.user.update({
+				where: {
+					email: restaurant.email,
+					deleted_at: null,
 				},
-				whatsapp_no: whatsapp_no ?? existingRestaurant.whatsapp_no,
-				geo_location: {
-					lat: geo_loc_lat ?? existingRestaurant.geo_location?.lat,
-					lng: geo_loc_lng ?? existingRestaurant.geo_location?.lng,
+				data: {
+					name: restaurant_name ?? existingRestaurant.restaurant_name,
+					contact_no: contact_no ?? existingRestaurant.contact_no,
+					location: {
+						street_address:
+							street_address ??
+							existingRestaurant.address?.street_address,
+						city: city ?? existingRestaurant.address?.city,
+						state: state ?? existingRestaurant.address?.state,
+						country: country ?? existingRestaurant.address?.country,
+						pin_code:
+							pin_code ?? existingRestaurant.address?.pin_code,
+						landmark:
+							landmark ?? existingRestaurant.address?.landmark,
+					},
+					profile_image: logoFilename || existingRestaurant.logo,
+					profile_remarks:
+						"Profile information updated by the restaurant.",
 				},
-				date_of_estd: date_of_estd ?? existingRestaurant.date_of_estd,
-				biography: biography ?? existingRestaurant.biography,
-				restaurant_capacity:
-					restaurant_capacity ??
-					existingRestaurant.restaurant_capacity,
-				night_life: night_life ?? existingRestaurant.night_life,
-				services: services ?? existingRestaurant.services,
-				open_time: open_time ?? existingRestaurant.open_time,
-				close_time: close_time ?? existingRestaurant.close_time,
-				types_of_cuisines:
-					types_of_cuisines ?? existingRestaurant.types_of_cuisines,
-				operational_days:
-					operational_days ?? existingRestaurant.operational_days,
-				insta_link: insta_link ?? existingRestaurant.insta_link,
-				fb_link: fb_link ?? existingRestaurant.fb_link,
-				x_link: x_link ?? existingRestaurant.x_link,
-				menu: menu ?? existingRestaurant.menu,
-				logo: logoFilename ?? existingRestaurant.logo,
-				cover_img: cover_imgFilename ?? existingRestaurant.cover_img,
-				rating: rating ?? existingRestaurant.rating,
-				average_price:
-					average_price ?? existingRestaurant.average_price,
-				restaurant_verification:
-					restaurant_verification ??
-					existingRestaurant.restaurant_verification,
-				restaurant_verification_remarks:
-					restaurant_verification_remarks ??
-					existingRestaurant.restaurant_verification_remarks,
-				is_active: is_active ?? existingRestaurant.is_active,
-				aadhar_no: aadhar_no ?? existingRestaurant.aadhar_no,
-				passport_no: passport_no ?? existingRestaurant.passport_no,
-				reg_cert_no: reg_cert_no ?? existingRestaurant.reg_cert_no,
-				fssai_no: fssai_no ?? existingRestaurant.fssai_no,
-				gstin_no: gstin_no ?? existingRestaurant.gstin_no,
-				aadhar_file: aadharFilename ?? existingRestaurant.aadhar_file,
-				passport_file:
-					passportFilename ?? existingRestaurant.passport_file,
-				reg_cert_file:
-					regCertFilename ?? existingRestaurant.reg_cert_file,
-				fssai_file: fssaiFilename ?? existingRestaurant.fssai_file,
-				gstin_file: gstinFilename ?? existingRestaurant.gstin_file,
-				bank_name: bank_name ?? existingRestaurant.bank_name,
-				bank_ac_name: bank_ac_name ?? existingRestaurant.bank_ac_name,
-				bank_ac_no: bank_ac_no ?? existingRestaurant.bank_ac_no,
-				bank_branch: bank_branch ?? existingRestaurant.bank_branch,
-				bank_ifsc: bank_ifsc ?? existingRestaurant.bank_ifsc,
-				bank_micr: bank_micr ?? existingRestaurant.bank_micr,
-			},
+			});
+			await prisma.restaurant.update({
+				where: {
+					id: restaurant.id,
+					deleted_at: null,
+				},
+				data: {
+					restaurant_name:
+						restaurant_name ?? existingRestaurant.restaurant_name,
+					owner_name: owner_name ?? existingRestaurant.owner_name,
+					contact_no: contact_no ?? existingRestaurant.contact_no,
+					address: {
+						street_address:
+							street_address ??
+							existingRestaurant.address?.street_address,
+						city: city ?? existingRestaurant.address?.city,
+						state: state ?? existingRestaurant.address?.state,
+						country: country ?? existingRestaurant.address?.country,
+						pin_code:
+							pin_code ?? existingRestaurant.address?.pin_code,
+						landmark:
+							landmark ?? existingRestaurant.address?.landmark,
+					},
+					whatsapp_no: whatsapp_no ?? existingRestaurant.whatsapp_no,
+					geo_location: {
+						lat:
+							geo_loc_lat ?? existingRestaurant.geo_location?.lat,
+						lng:
+							geo_loc_lng ?? existingRestaurant.geo_location?.lng,
+					},
+					date_of_estd:
+						date_of_estd ?? existingRestaurant.date_of_estd,
+					biography: biography ?? existingRestaurant.biography,
+					restaurant_capacity:
+						restaurant_capacity ??
+						existingRestaurant.restaurant_capacity,
+					night_life: night_life ?? existingRestaurant.night_life,
+					services: services ?? existingRestaurant.services,
+					open_time: open_time ?? existingRestaurant.open_time,
+					close_time: close_time ?? existingRestaurant.close_time,
+					types_of_cuisines:
+						types_of_cuisines ??
+						existingRestaurant.types_of_cuisines,
+					operational_days:
+						operational_days ?? existingRestaurant.operational_days,
+					insta_link: insta_link ?? existingRestaurant.insta_link,
+					fb_link: fb_link ?? existingRestaurant.fb_link,
+					x_link: x_link ?? existingRestaurant.x_link,
+					menu: menu ?? existingRestaurant.menu,
+					logo: logoFilename ?? existingRestaurant.logo,
+					cover_img:
+						cover_imgFilename ?? existingRestaurant.cover_img,
+					rating: rating ?? existingRestaurant.rating,
+					average_price:
+						average_price ?? existingRestaurant.average_price,
+					restaurant_verification:
+						restaurant_verification ??
+						existingRestaurant.restaurant_verification,
+					restaurant_verification_remarks:
+						restaurant_verification_remarks ??
+						existingRestaurant.restaurant_verification_remarks,
+					is_active: is_active ?? existingRestaurant.is_active,
+					aadhar_no: aadhar_no ?? existingRestaurant.aadhar_no,
+					passport_no: passport_no ?? existingRestaurant.passport_no,
+					reg_cert_no: reg_cert_no ?? existingRestaurant.reg_cert_no,
+					fssai_no: fssai_no ?? existingRestaurant.fssai_no,
+					gstin_no: gstin_no ?? existingRestaurant.gstin_no,
+					aadhar_file:
+						aadharFilename ?? existingRestaurant.aadhar_file,
+					passport_file:
+						passportFilename ?? existingRestaurant.passport_file,
+					reg_cert_file:
+						regCertFilename ?? existingRestaurant.reg_cert_file,
+					fssai_file: fssaiFilename ?? existingRestaurant.fssai_file,
+					gstin_file: gstinFilename ?? existingRestaurant.gstin_file,
+					bank_name: bank_name ?? existingRestaurant.bank_name,
+					bank_ac_name:
+						bank_ac_name ?? existingRestaurant.bank_ac_name,
+					bank_ac_no: bank_ac_no ?? existingRestaurant.bank_ac_no,
+					bank_branch: bank_branch ?? existingRestaurant.bank_branch,
+					bank_ifsc: bank_ifsc ?? existingRestaurant.bank_ifsc,
+					bank_micr: bank_micr ?? existingRestaurant.bank_micr,
+				},
+			});
 		});
 
 		return h
