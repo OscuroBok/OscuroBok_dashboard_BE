@@ -1,27 +1,26 @@
 /* This file has functions to seed the database with role and restaurant data. 
-   The seedRoles function seeds roles and seedRestaurantProfile seeds restaurant 
-   profiles. The seedAll function runs both seeders one after the other. Each 
-   function shows progress with logs. */
+   The adminSeeder function seeds super admin profile and seedRestaurantProfile seeds restaurant 
+   profile. The seedAll function runs both seeders one after the other. Each 
+   function shows progress with logs. 
+*/
 
-const roleSeeder = require("./role-seeder");
 const restaurantSeeder = require("./restaurant.seeder");
+const { adminSeeder } = require("./admin.seeder");
 
-const seedRoles = async () => {
-	console.log("Seeding roles...");
-	await roleSeeder();
-	console.log("Roles seeded successfully.");
+const seedAdminProfile = async () => {
+	console.log("Seeding admin profile...");
+	await adminSeeder();
 };
 
 const seedRestaurantProfile = async () => {
-	console.log("Seeding restaurants...");
+	console.log("Seeding restaurant profile...");
 	await restaurantSeeder();
-	console.log("Restaurants seeded successfully.");
 };
 
 const seedAll = async () => {
-	await seedRoles();
+	await seedAdminProfile();
 	await seedRestaurantProfile();
 	console.log("All seeders executed successfully.");
 };
 
-module.exports = { seedRoles, seedRestaurantProfile, seedAll };
+module.exports = { seedAdminProfile, seedRestaurantProfile, seedAll };
