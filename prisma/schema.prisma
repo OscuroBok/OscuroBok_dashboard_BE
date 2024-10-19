@@ -186,7 +186,7 @@ model Follower {
   user    User @relation(fields: [user_id], references: [id])
 
   restaurant_id Int
-  Restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
+  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
 
   isFollow         Boolean @default(true)
   unfollowedReason String?
