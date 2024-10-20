@@ -6,7 +6,7 @@
 
 const user = require("./v1/user.route");
 const restaurant = require("./v1/restaurant.route");
-const admin = require("./admin");
+const admin = require("./v1/admin.route");
 const integrated = require("./v1/integrated.route");
 
 module.exports = {
