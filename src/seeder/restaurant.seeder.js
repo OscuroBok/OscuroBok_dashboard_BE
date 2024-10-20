@@ -15,11 +15,19 @@ const { v4: uuidv4 } = require("uuid");
 
 const restaurantSeeder = async (req, h) => {
 	try {
-		const name = "Restaurant Owner";
+		const owner_name = "Restaurant Owner";
 		const restaurant_name = "The Grid";
 		const email = "restaurant@gmail.com";
 		const contact_no = "1234567890";
 		const password = "password";
+		const address = {
+			street_address: "123 Park Street",
+			city: "Kolkata",
+			state: "West Bengal",
+			country: "India",
+			pin_code: "700016",
+			landmark: "Near Victoria Memorial",
+		};
 		const geo_location = { lat: "22.5421095", lng: "88.3831058" };
 		const hashedPassword = await bcrypt.hash(password, 10);
 		const roleExists = await prisma.role.findFirst({
@@ -44,13 +52,14 @@ const restaurantSeeder = async (req, h) => {
 			}
 			return console.log("Restaurant profile already exists.");
 		}
-		const restaurant_code = `RST${uuidv4().substring(0, 6)}`;
+		const restaurant_code = `RST${uuidv4().substring(0, 5)}`;
 		await prisma.$transaction(async (prisma) => {
 			const user = await prisma.user.create({
 				data: {
-					name,
+					name: restaurant_name,
 					email,
 					contact_no,
+					location: address,
 					password: hashedPassword,
 					role_id: roleExists.id,
 					usercode: restaurant_code,
@@ -60,10 +69,11 @@ const restaurantSeeder = async (req, h) => {
 				data: {
 					restaurant_name,
 					restaurant_code,
-					owner_name: name,
+					owner_name,
 					contact_no,
 					email,
 					password: hashedPassword,
+					address,
 					geo_location,
 					user_id: user.id,
 				},

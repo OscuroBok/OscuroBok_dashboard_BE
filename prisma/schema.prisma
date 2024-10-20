@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = env("DEPLOYED_DATABASE_URL")
 }
 
 model Admin {
@@ -62,6 +62,7 @@ model User {
   updated_at DateTime?    @updatedAt
   deleted_at DateTime?
   Restaurant Restaurant[]
+  Follower   Follower[]
 
   @@map("users")
 }
@@ -79,9 +80,9 @@ model Role {
 
 model Restaurant {
   id                              Int       @id @default(autoincrement())
-  restaurant_name                 String?
+  restaurant_name                 String
   restaurant_code                 String
-  owner_name                      String
+  owner_name                      String?
   contact_no                      String    @unique
   whatsapp_no                     String?
   email                           String    @unique
@@ -132,8 +133,9 @@ model Restaurant {
   user_id Int
   user    User @relation(fields: [user_id], references: [id])
 
-  Post Post[]
-  File File[]
+  Post     Post[]
+  File     File[]
+  Follower Follower[]
 
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
@@ -175,4 +177,23 @@ model File {
   deleted_at DateTime?
 
   @@map("files")
+}
+
+model Follower {
+  id Int @id @default(autoincrement())
+
+  user_id Int
+  user    User @relation(fields: [user_id], references: [id])
+
+  restaurant_id Int
+  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
+
+  isFollow         Boolean @default(true)
+  unfollowedReason String?
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@map("followers")
 }
