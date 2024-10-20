@@ -1,5 +1,5 @@
-const { Authentication } = require("../config/auth");
-const controller = require("../controller/user.controller");
+const { Authentication } = require("../../config/auth");
+const controller = require("../../controller/user.controller");
 const Joi = require("joi");
 const {
 	createUserValidation,
@@ -9,7 +9,9 @@ const {
 	userPasswordChangeValidation,
 	userProfileDeletionValidation,
 	userProfileDeletionByAdminValidation,
-} = require("../validations/user.validation");
+	followRestaurantprofileValidation,
+	unfollowRestaurantprofileValidation,
+} = require("../../validations/user.validation");
 const contactNoPattern = /^(\+|\d)[0-9]{7,16}$/;
 
 module.exports = [
@@ -187,7 +189,6 @@ module.exports = [
 			tags: ["api", "User"],
 			handler: controller.profileDeletionByAdmin,
 			description: "User profile deletion by Admin",
-			// pre: [Authentication],
 			validate: {
 				...userProfileDeletionByAdminValidation,
 				failAction: (request, h, err) => {
@@ -214,6 +215,82 @@ module.exports = [
 					responseMessages: [],
 				},
 			},
+		},
+	},
+
+	// follow restaurant profile
+	{
+		method: "POST",
+		path: "/follow-restaurant-profile",
+		options: {
+			tags: ["api", "User"],
+			handler: controller.followRestaurantprofile,
+			description: "Follow Restaurant's Profile",
+			pre: [Authentication],
+			validate: {
+				...followRestaurantprofileValidation,
+				failAction: (request, h, err) => {
+					const customErrorMessages = err.details.map(
+						(detail) => detail.message
+					);
+					return h
+						.response({
+							statusCode: 400,
+							error: "Bad Request",
+							message: customErrorMessages,
+						})
+						.code(400)
+						.takeover();
+				},
+			},
+			payload: {
+				allow: ["application/json"],
+				parse: true,
+			},
+		},
+	},
+
+	// unfollow restaurant profile unfollow
+	{
+		method: "POST",
+		path: "/unfollow-restaurant-profile",
+		options: {
+			tags: ["api", "User"],
+			handler: controller.unfollowRestaurantProfile,
+			description: "Unfollow Restaurant's Profile",
+			pre: [Authentication],
+			validate: {
+				...unfollowRestaurantprofileValidation,
+				failAction: (request, h, err) => {
+					const customErrorMessages = err.details.map(
+						(detail) => detail.message
+					);
+					return h
+						.response({
+							statusCode: 400,
+							error: "Bad Request",
+							message: customErrorMessages,
+						})
+						.code(400)
+						.takeover();
+				},
+			},
+			payload: {
+				allow: ["application/json"],
+				parse: true,
+			},
+		},
+	},
+
+	// get all followed restaurants
+	{
+		method: "GET",
+		path: "/followed-restaurants-list",
+		options: {
+			tags: ["api", "User"],
+			handler: controller.showFollowedRestaurants,
+			pre: [Authentication],
+			description: "Get all followed restaurant profile(s)",
 		},
 	},
 ];
