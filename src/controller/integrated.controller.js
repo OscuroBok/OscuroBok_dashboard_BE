@@ -126,4 +126,8 @@ const userVendorLogin = async (req, h) => {
 	}
 };
 
+const userVendorForgetPassword = {
+
+};
+
 module.exports = { userVendorLogin };

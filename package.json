@@ -13,8 +13,9 @@
     "seed:user": "node -e \"require('./src/seeder/main.seeder.js').seedUserProfile()\"",
     "seed:restaurant": "node -e \"require('./src/seeder/main.seeder.js').seedRestaurantProfile()\"",
     "seed:admin": "node -e \"require('./src/seeder/main.seeder.js').seedAdminProfile()\"",
-    "seed:all": "node -e \"require('./src/seeder/main.seeder.js').seedAll()\""
-  },
+    "seed:all": "node -e \"require('./src/seeder/main.seeder.js').seedAll()\"",
+    "postinstall": "code --install-extension Prisma.prisma && code --install-extension Prisma.prisma-insider"
+},
   "prisma": {
     "seed": "node ./src/seeder/role.seeder.js"
   },

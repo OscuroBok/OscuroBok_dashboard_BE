@@ -278,7 +278,7 @@ const sentOtpForForgetpassword = async (req, h) => {
                 from: process.env.EMAIL,
                 to: email,
                 subject: "Sending Eamil For Otp VERIFICATION",
-                text: `Use this OTP for verification :- ${OTP}`
+                text: `Use this OTP for verification :- ${OTP}. Valid for 2 minutes`
             };
 
             tarnsporter.sendMail(mailOptions, (error, info) => {

@@ -255,6 +255,7 @@ const editMyProfile = async (req, h) => {
 	}
 };
 
+
 // change password with existing password
 const changeUserPassword = async (req, h) => {
 	try {

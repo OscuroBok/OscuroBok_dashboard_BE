@@ -3,6 +3,11 @@
 │   ├── auth.js              # Authentication configuration
 │   └── DbConfig.js          # Database configuration/Setup (e.g., MongoDB, PostgreSQL)
 ├── 📂 controller/            # Contains business logic, request handling, interacts with Services and models, processing requests & sending back response.
+├── 📂 services/              # Service layer (Business logic interacting with DB, external APIs, etc.)
+│   ├── auth.services.js              # Handles authentication logic, like login, token generation
+│   ├── user.services.js              # Handles user-related database interactions
+│   ├── restaurant.services.js        # Handles restaurant-related database interactions
+│   └── integrated.services.js    # Handles user-restaurant generic apis
 ├── 📂 docs/                  # Documentation files (e.g., this README.md)
 ├── 📂 helper/                # Helper utility functions used across the application, making repetitive tasks easier to manage. Ex: date formatting, string manipulations
 ├── 📂 Routes/
