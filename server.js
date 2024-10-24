@@ -1,14 +1,14 @@
 "use strict";
 
-const Hapi = require("@hapi/hapi");
-const Inert = require("@hapi/inert");
-const Vision = require("@hapi/vision");
-const HapiSwagger = require("hapi-swagger");
+const Hapi = require("@hapi/hapi");// Framework for building the server
+const Inert = require("@hapi/inert");// Serves static files and directories
+const Vision = require("@hapi/vision");// Renders server-side views.
+const HapiSwagger = require("hapi-swagger");// Generates documentation for the Backend APIs created
 const Pack = require("./package");
 const baseRouterV1 = require("./src/Routes");
 
 const server = Hapi.server({
-    port: process.env.PORT || 4500,
+    port: process.env.PORT || 5500, // The server listens on the port specified by process.env.PORT (or defaults to 5500
     host: process.env.HOST || "localhost",
     routes: {
         cors: {
